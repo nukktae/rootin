@@ -8,6 +8,7 @@ import '../models/plant.dart';
 import './add_plant_detail_screen.dart';
 import '../widgets/plant_search_bar.dart';
 import '../widgets/plant_search_item.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AddPlantScreen extends StatefulWidget {
   final String? plantTypeId;
@@ -198,12 +199,23 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
             // Close button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: IconButton(
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-                style: IconButton.styleFrom(
-                  backgroundColor: const Color(0xFFF5F5F5),
-                  shape: const CircleBorder(),
+              child: Container(
+                width: 48,
+                height: 48,
+                padding: const EdgeInsets.all(10),
+                decoration: ShapeDecoration(
+                  color: const Color(0xFFEEEEEE),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: SvgPicture.asset(
+                    'assets/icons/close.svg',
+                    width: 28,
+                    height: 28,
+                  ),
                 ),
               ),
             ),
@@ -214,18 +226,22 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
               child: Text(
                 'Identify your plant first',
                 style: TextStyle(
+                  color: Colors.black,
                   fontSize: 22,
+                  fontFamily: 'Inter',
                   fontWeight: FontWeight.w600,
+                  letterSpacing: -0.22,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 'Search by plant name or use an image to identify.',
                 style: TextStyle(
                   fontSize: 14,
+                  fontFamily: 'Inter',
                   color: Color(0xFF6F6F6F),
                 ),
               ),

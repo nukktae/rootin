@@ -1,5 +1,6 @@
 // File: add_search_bar.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import '../screens/camera_capture_screen.dart';
 
@@ -33,10 +34,10 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
         children: [
           Expanded(
             child: Container(
-              height: 48,
+              height: 50,
               decoration: BoxDecoration(
                 color: const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(40),
               ),
               child: TextField(
                 controller: _searchController,
@@ -46,6 +47,8 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
                   hintStyle: const TextStyle(
                     color: Color(0xFF6F6F6F),
                     fontSize: 16,
+                    fontFamily: 'Inter',
+                    letterSpacing: -0.16,
                   ),
                   prefixIcon: const Icon(
                     Icons.search,
@@ -61,7 +64,7 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
                       )
                     : null,
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
                 ),
               ),
             ),
@@ -77,14 +80,19 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
               );
             },
             child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
+              width: 72,
+              height: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+              decoration: ShapeDecoration(
                 color: Colors.black,
-                borderRadius: BorderRadius.circular(12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(40),
+                ),
               ),
-              child: const Icon(
-                Icons.camera_alt_outlined,
+              child: SvgPicture.asset(
+                'assets/icons/camera.svg',
+                width: 24,
+                height: 24,
                 color: Colors.white,
               ),
             ),

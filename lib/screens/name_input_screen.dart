@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'site_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../constants/api_constants.dart';
 
 class NameInputScreen extends StatefulWidget {
   final String plantId;
@@ -43,22 +47,27 @@ class _NameInputScreenState extends State<NameInputScreen> {
     super.dispose();
   }
 
-  void _onContinue() {
+  Future<void> _onContinue() async {
     final plantNickname = _nameController.text.trim();
-
+    
     if (plantNickname.isEmpty) {
-      // Just in case the button was enabled improperly
       debugPrint("Plant nickname is empty!");
       return;
     }
 
-    debugPrint("Navigating to SiteSelectionScreen with:");
-    debugPrint("Nickname: $plantNickname");
-    debugPrint("Plant Name: ${widget.plantName}");
-    debugPrint("Plant Subname: ${widget.scientificName}");
-    debugPrint("Plant Image URL: ${widget.imageUrl ?? 'No image URL provided'}");
-
-    _navigateToSiteSelection();
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SiteSelectionScreen(
+            id: widget.plantId,
+            name: plantNickname,  // Pass the nickname to site selection
+            subname: widget.scientificName,
+            imageUrl: widget.imageUrl,
+          ),
+        ),
+      );
+    }
   }
 
   bool get _isValidInput => _nameController.text.isNotEmpty && 
@@ -252,26 +261,6 @@ class _NameInputScreenState extends State<NameInputScreen> {
         Icons.image_not_supported,
         color: Colors.grey,
         size: 50,
-      ),
-    );
-  }
-
-  void _navigateToSiteSelection() {
-    print('Navigating to SiteSelectionScreen with:');
-    print('Nickname: ${_nameController.text}');
-    print('Plant Name: ${widget.plantName}');
-    print('Plant Subname: ${widget.scientificName}');
-    print('Plant Image URL: ${widget.imageUrl}');
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SiteSelectionScreen(
-          id: widget.plantId,
-          name: _nameController.text.trim(),
-          subname: widget.scientificName ?? '',
-          imageUrl: widget.imageUrl,
-        ),
       ),
     );
   }
