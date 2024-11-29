@@ -9,7 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../widgets/filter_modal.dart';
 import '../widgets/care_banner.dart';
 import '../widgets/plant_grid_view.dart';
-import '../screens/camera_capture_screen.dart';
+import '../screens/add_plant_screen.dart';
 import '../widgets/rootin_header.dart';
 import '../widgets/ai_chat_fab.dart';
 
@@ -191,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const CameraCaptureScreen(),
+                          builder: (context) => const AddPlantScreen(),
                         ),
                       ),
                       child: Container(
