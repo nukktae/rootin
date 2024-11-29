@@ -1,9 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../screens/app_guide_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _launchRootinWebsite(BuildContext context) async {
+    final Uri url = Uri.parse('https://www.rootin.me');
+    try {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not open website'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error launching URL: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not open website'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +76,7 @@ class ProfileScreen extends StatelessWidget {
                       child: _buildQuickAccessButton(
                         title: 'Shop Sensor',
                         iconPath: 'assets/icons/shop_icon.svg',
-                        onTap: () {},
+                        onTap: () => _launchRootinWebsite(context),
                       ),
                     ),
                   ],

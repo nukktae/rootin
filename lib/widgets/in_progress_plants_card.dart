@@ -111,11 +111,12 @@ class InProgressPlantsCard extends StatelessWidget {
                 ),
                 child: InkWell(
                   onTap: () {
+                    print('Navigating to plant with typeId: ${entry.value['plantTypeId']}');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => PlantDetailScreen(
-                          plantTypeId: entry.value['plantId'].toString(),
+                          plantTypeId: entry.value['plantTypeId']?.toString() ?? '',
                         ),
                       ),
                     );
