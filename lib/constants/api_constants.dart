@@ -14,7 +14,11 @@ class ApiConstants {
 
   // Full URLs
   static String getPlantTypesUrl() => '$baseUrl/$apiVersion/plant-types';
-  static String getPlantsUrl() => '$baseUrl/$apiVersion$plantsEndpoint';
+  static String getPlantsUrl() {
+    final url = '$baseUrl/$apiVersion/plants';
+    print('Generated URL: $url'); // Debug log
+    return url;
+  }
   
   // Query Parameters
   static const String categoryIdParam = 'categoryId';

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import '../widgets/status_icon.dart';
 import 'dart:developer';
 import '../screens/plant_detail_screen.dart';
+import '../models/plant.dart';
 
 class PlantGridView extends StatelessWidget {
-  final List<dynamic> plants;
+  final List<Plant> plants;
   final String emptyMessage;
 
   const PlantGridView({
@@ -41,7 +42,7 @@ class PlantGridView extends StatelessWidget {
       itemCount: plants.length,
       itemBuilder: (context, index) {
         final plant = plants[index];
-        log('Plant data: $plant');
+        log('Plant data for grid item: ${plant.toJson()}');
         
         return GestureDetector(
           onTap: () {
@@ -49,7 +50,7 @@ class PlantGridView extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (context) => PlantDetailScreen(
-                  plantTypeId: plant['plantTypeId']?.toString() ?? '',
+                  plantTypeId: plant.plantTypeId,
                 ),
               ),
             );
@@ -72,9 +73,9 @@ class PlantGridView extends StatelessWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: plant['imageUrl'] != null
+                          child: plant.imageUrl != null
                               ? Image.network(
-                                  plant['imageUrl'],
+                                  plant.imageUrl,
                                   width: double.infinity,
                                   height: double.infinity,
                                   fit: BoxFit.cover,
@@ -90,7 +91,7 @@ class PlantGridView extends StatelessWidget {
                                     );
                                   },
                                   errorBuilder: (context, error, stackTrace) {
-                                    log('Image error for ${plant['nickname']}: $error');
+                                    log('Image error for ${plant.nickname}: $error');
                                     return const Icon(
                                       Icons.image_not_supported,
                                       color: Color(0xFF8E8E8E),
@@ -102,7 +103,7 @@ class PlantGridView extends StatelessWidget {
                         Positioned(
                           bottom: 10,
                           left: 10,
-                          child: StatusIcon(status: plant['status'] ?? 'NO_SENSOR'),
+                          child: StatusIcon(status: plant.status ?? 'NO_SENSOR'),
                         ),
                       ],
                     ),
@@ -110,7 +111,7 @@ class PlantGridView extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  plant['nickname'] ?? 'Unnamed Plant',
+                  plant.nickname.isNotEmpty ? plant.nickname : plant.plantTypeName,
                   style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
@@ -122,7 +123,7 @@ class PlantGridView extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  plant['plantType']?['name'] ?? 'Monstera Dubia',
+                  plant.plantTypeName,
                   style: const TextStyle(
                     color: Color(0xFF6F6F6F),
                     fontSize: 12,
@@ -134,7 +135,7 @@ class PlantGridView extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'In ${plant['category']?.split('/')?.last ?? 'Unknown'}',
+                  'In ${plant.category.split('/').last}',
                   style: const TextStyle(
                     color: Color(0xFF6F6F6F),
                     fontSize: 12,
