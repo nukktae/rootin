@@ -71,7 +71,6 @@ class AppGuideScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     
-                    // Filter chips
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -108,13 +107,19 @@ class AppGuideScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     
-                    // Status explanation box
                     Container(
                       width: double.infinity,
                       height: 135,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEEEEEE),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEEEEEE),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/images/appguide.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ],

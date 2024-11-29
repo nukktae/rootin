@@ -77,5 +77,10 @@
     <string>This app needs location access to scan for WiFi networks</string>
     <key>NSLocalNetworkUsageDescription</key>
     <string>This app needs Local Network access to scan for WiFi networks</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>http</string>
+        <string>https</string>
+    </array>
 </dict>
 </plist>

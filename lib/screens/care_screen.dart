@@ -83,115 +83,92 @@ class CareScreenState extends State<CareScreen> with SingleTickerProviderStateMi
 
         final plants = snapshot.data!;
 
-        // Get underwater plants (WATER_NEEDED status)
+        // Get all plants categorized
         final underwaterPlants = plants
-            .where((plant) => plant.status == 'WATER_NEEDED')
+            .where((plant) => plant.currentMoisture < (plant.moistureRange['min'] ?? 0.0))
             .map((plant) => {
                   'plantId': plant.plantId,
-                  'name': plant.plantTypeName,
+                  'plantTypeId': plant.plantTypeId,
+                  'name': plant.nickname.isNotEmpty ? plant.nickname : plant.plantTypeName,
                   'location': 'In ${plant.category}',
                   'imageUrl': plant.imageUrl,
                 })
             .toList();
 
-        // Get in progress plants (MEASURING status)
         final inProgressPlants = plants
             .where((plant) => plant.status == 'MEASURING')
             .map((plant) => {
                   'plantId': plant.plantId,
-                  'name': plant.plantTypeName,
+                  'plantTypeId': plant.plantTypeId,
+                  'name': plant.nickname.isNotEmpty ? plant.nickname : plant.plantTypeName,
                   'location': 'In ${plant.category}',
                   'imageUrl': plant.imageUrl,
                 })
             .toList();
 
-        // Get ideal (done) plants
         final donePlants = plants
-            .where((plant) => plant.status == 'IDEAL')
+            .where((plant) => 
+                plant.currentMoisture >= (plant.moistureRange['min'] ?? 0.0) &&
+                plant.currentMoisture <= (plant.moistureRange['max'] ?? 100.0))
             .map((plant) => {
                   'plantId': plant.plantId,
-                  'name': plant.plantTypeName,
+                  'plantTypeId': plant.plantTypeId,
+                  'name': plant.nickname.isNotEmpty ? plant.nickname : plant.plantTypeName,
                   'location': 'In ${plant.category}',
                   'imageUrl': plant.imageUrl,
                 })
             .toList();
 
         if (filter == "Today") {
-          return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            children: [
-              const SizedBox(height: 32),
-              const SizedBox(
-                width: 353,
-                child: Text(
-                  'To-Do',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 22,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                    height: 0.06,
-                    letterSpacing: -0.22,
-                  ),
-                ),
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  if (underwaterPlants.isNotEmpty)
+                    UnderwaterPlantsCard(
+                      plants: underwaterPlants,
+                      count: underwaterPlants.length,
+                    ),
+                  if (inProgressPlants.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    InProgressPlantsCard(
+                      plants: inProgressPlants,
+                      count: inProgressPlants.length,
+                    ),
+                  ],
+                  if (donePlants.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    DonePlantsCard(
+                      plants: donePlants,
+                      count: donePlants.length,
+                    ),
+                  ],
+                  const SizedBox(height: 80),
+                ],
               ),
-              const SizedBox(height: 24),
-              
-              if (underwaterPlants.isNotEmpty)
-                UnderwaterPlantsCard(
-                  count: underwaterPlants.length,
-                  plants: underwaterPlants,
-                ),
-              
-              if (underwaterPlants.isNotEmpty && inProgressPlants.isNotEmpty)
-                const SizedBox(height: 32),
-                
-              if (inProgressPlants.isNotEmpty)
-                InProgressPlantsCard(
-                  count: inProgressPlants.length,
-                  plants: inProgressPlants,
-                ),
-
-              if ((underwaterPlants.isNotEmpty || inProgressPlants.isNotEmpty) && donePlants.isNotEmpty)
-                const SizedBox(height: 32),
-
-              if (donePlants.isNotEmpty)
-                DonePlantsCard(
-                  count: donePlants.length,
-                  plants: donePlants,
-                ),
-            ],
+            ),
           );
         } else {
-          // Upcoming tab content
-          return ListView(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-            children: [
-              const SizedBox(height: 32),
-              const SizedBox(
-                width: 353,
-                child: Text(
-                  'To-Do',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 22,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                    height: 0.06,
-                    letterSpacing: -0.22,
-                  ),
-                ),
+          // Only show underwater plants for Upcoming tab
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 40),
+                  if (underwaterPlants.isNotEmpty)
+                    UnderwaterPlantsCard(
+                      plants: underwaterPlants,
+                      count: underwaterPlants.length,
+                    ),
+                  const SizedBox(height: 80),
+                ],
               ),
-              const SizedBox(height: 24),
-              
-              if (underwaterPlants.isNotEmpty)
-                UnderwaterPlantsCard(
-                  count: underwaterPlants.length,
-                  plants: underwaterPlants,
-                )
-              else
-                const Center(child: Text("No tasks to display")),
-            ],
+            ),
           );
         }
       },
