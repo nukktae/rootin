@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../screens/sensor_search_screen.dart';
 import 'dart:developer' as dev;
+import '../constants/api_constants.dart';
 
 class ConfirmPlantScreen extends StatefulWidget {
   final String id;
@@ -29,64 +30,96 @@ class ConfirmPlantScreen extends StatefulWidget {
 
 class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
   Future<void> _registerPlant(BuildContext context) async {
-    dev.log('Plant ID: ${widget.id}');
-    dev.log('Plant Name: ${widget.plantName}');
-    dev.log('Room Name: ${widget.roomName}');
-    dev.log('Category ID: ${widget.categoryId}');
-    dev.log('Image URL: ${widget.imageUrl}');
-
     try {
       final token = dotenv.env['FCM_TOKEN'];
-      final response = await http.post(
-        Uri.parse('https://api.rootin.me/v1/plants'),
+      
+      // 1. First create the plant
+      final createUrl = '${ApiConstants.baseUrl}/v1/plants';
+      debugPrint('Creating plant with data: ${widget.id}, ${widget.categoryId}, ${widget.imageUrl}');
+      
+      final createResponse = await http.post(
+        Uri.parse(createUrl),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
-          'accept': 'application/json',
         },
         body: json.encode({
           'plantTypeId': widget.id,
-          'nickname': widget.plantName,
           'categoryId': widget.categoryId,
+          'imageUrl': widget.imageUrl,
         }),
       );
 
-      if (!mounted) return;
+      debugPrint('Create Response: ${createResponse.body}');
 
-      if (response.statusCode == 201) {
-        dev.log('Plant registered successfully');
-        _navigateToSensorSearch();
-      } else {
-        if (mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Error'),
-              content: const Text('Failed to register plant'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
+      if (createResponse.statusCode == 200 || createResponse.statusCode == 201) {
+        // Get the list of plants to find the most recently created one
+        final getUrl = '${ApiConstants.baseUrl}/v1/plants';
+        final getResponse = await http.get(
+          Uri.parse(getUrl),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': 'application/json',
+          },
+        );
+
+        if (getResponse.statusCode == 200) {
+          final Map<String, dynamic> data = json.decode(getResponse.body);
+          final List<dynamic> plants = data['data'] as List;
+          
+          // Find the most recently created plant with matching plantTypeId
+          final recentPlant = plants.firstWhere(
+            (plant) => plant['plantTypeId'] == widget.id,
+            orElse: () => null,
           );
+
+          if (recentPlant == null) {
+            throw Exception('Could not find newly created plant');
+          }
+
+          final plantId = recentPlant['plantId'];
+          debugPrint('Found plant ID: $plantId');
+
+          // 2. Then update the nickname using PUT endpoint
+          final updateUrl = '${ApiConstants.baseUrl}/v1/plants/$plantId';
+          debugPrint('Updating plant with nickname: ${widget.plantName}');
+          
+          final updateResponse = await http.put(
+            Uri.parse(updateUrl),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+            body: json.encode({
+              'plantTypeId': widget.id,
+              'categoryId': widget.categoryId,
+              'imageUrl': widget.imageUrl,
+              'nickname': widget.plantName,
+            }),
+          );
+
+          debugPrint('Update Response: ${updateResponse.body}');
+
+          if (updateResponse.statusCode == 200) {
+            if (mounted) {
+              _navigateToSensorSearch();
+            }
+          } else {
+            throw Exception('Failed to update plant nickname: ${updateResponse.statusCode}');
+          }
+        } else {
+          throw Exception('Failed to get plants: ${getResponse.statusCode}');
         }
+      } else {
+        throw Exception('Failed to create plant: ${createResponse.statusCode}');
       }
     } catch (e) {
-      dev.log('Error registering plant: $e');
+      debugPrint('Error in plant registration: $e');
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Error'),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
             content: Text('Failed to register plant: $e'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
+            backgroundColor: Colors.red,
           ),
         );
       }
