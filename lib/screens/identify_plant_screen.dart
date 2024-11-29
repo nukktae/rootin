@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http_parser/http_parser.dart';
 import 'name_input_screen.dart';
-import 'add_plant_screen.dart';
 
 class IdentifyPlantScreen extends StatefulWidget {
   final File imageFile;
@@ -260,8 +259,8 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AddPlantScreen(
-                      plantTypeId: _identifiedPlant?['id'] ?? '',
+                    builder: (context) => NameInputScreen(
+                      plantId: _identifiedPlant?['id'] ?? '',
                       plantName: _identifiedPlant?['name'] ?? '',
                       scientificName: _identifiedPlant?['subname'] ?? '',
                       imageUrl: _identifiedPlant?['imageUrl'] ?? '',
