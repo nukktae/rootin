@@ -20,7 +20,7 @@ class PlantSearchItem extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: GestureDetector(
         onTap: onTap,
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           height: 80,
           child: Row(
@@ -49,21 +49,23 @@ class PlantSearchItem extends StatelessWidget {
                       name,
                       style: const TextStyle(
                         color: Colors.black,
-                        fontSize: 16,
+                        fontSize: 18,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      subname,
-                      style: const TextStyle(
-                        color: Color(0xFF6F6F6F),
-                        fontSize: 12,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
+                    if (subname.isNotEmpty)
+                      Text(
+                        subname,
+                        style: const TextStyle(
+                          color: Color(0xFF6F6F6F),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

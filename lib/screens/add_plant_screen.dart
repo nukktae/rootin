@@ -41,8 +41,10 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
           plant: {
             'id': plant.id,
             'name': plant.name,
-            'scientificName': plant.scientificName,
+            'subname': plant.scientificName,
             'imageUrl': plant.imageUrl,
+            'description': plant.description,
+            'category': plant.category,
           },
         ),
       ),
@@ -66,7 +68,6 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
         
         final token = dotenv.env['FCM_TOKEN'];
         final url = '${ApiConstants.getPlantTypesUrl()}?keyword=$query';
-        print('Searching plants with URL: $url');
         
         final response = await http.get(
           Uri.parse(url),
@@ -77,23 +78,32 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
           },
         );
 
-        print('Search response status: ${response.statusCode}');
-        print('Search response body: ${response.body}');
-
         if (response.statusCode == 200) {
           final Map<String, dynamic> jsonResponse = json.decode(response.body);
           final List<dynamic> rawData = jsonResponse['data'] as List<dynamic>;
           
-          final List<Plant> searchResults = rawData.map((item) {
-            return Plant.fromJson({
-              'id': item['id'],
-              'name': item['name'],
-              'subname': item['subname'],
-              'imageUrl': item['imageUrl'],
-            });
-          }).toList();
-
-          print('Parsed ${searchResults.length} results');
+          final List<Plant> searchResults = rawData.map((item) => Plant.fromJson({
+            'id': item['id'],
+            'name': item['name'],
+            'scientificName': item['subname'] ?? '',
+            'imageUrl': item['imageUrl'],
+            'description': item['description'] ?? '',
+            'category': item['category'] ?? '',
+            // Add default values for required fields
+            'plantId': '',
+            'plantTypeId': item['id'],
+            'nickname': '',
+            'plantTypeName': item['name'],
+            'status': '',
+            'currentMoisture': 0.0,
+            'moistureRange': {'min': 0.0, 'max': 0.0},
+            'infoDifficulty': '',
+            'infoWatering': '',
+            'infoLight': '',
+            'infoSoilType': '',
+            'infoRepotting': '',
+            'infoToxicity': '',
+          })).toList();
 
           if (mounted) {
             setState(() {
@@ -101,10 +111,6 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
               isLoading = false;
             });
           }
-        } else {
-          print('Failed to search plants: ${response.statusCode}');
-          print('Response body: ${response.body}');
-          setState(() => isLoading = false);
         }
       } catch (e) {
         print('Error searching plants: $e');
@@ -137,28 +143,40 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
         final List<dynamic> rawData = jsonResponse['data'] as List<dynamic>;
         
-        final List<Plant> plants = rawData.map((item) {
-          final Map<String, dynamic> plantData = Map<String, dynamic>.from(item);
-          return Plant.fromJson(plantData);
-        }).toList();
+        final List<Plant> plants = rawData.map((item) => Plant.fromJson({
+          'id': item['id'],
+          'name': item['name'],
+          'scientificName': item['subname'] ?? '',
+          'imageUrl': item['imageUrl'],
+          'description': item['description'] ?? '',
+          'category': item['category'] ?? '',
+          // Add default values for required fields
+          'plantId': '',
+          'plantTypeId': item['id'],
+          'nickname': '',
+          'plantTypeName': item['name'],
+          'status': '',
+          'currentMoisture': 0.0,
+          'moistureRange': {'min': 0.0, 'max': 0.0},
+          'infoDifficulty': '',
+          'infoWatering': '',
+          'infoLight': '',
+          'infoSoilType': '',
+          'infoRepotting': '',
+          'infoToxicity': '',
+        })).toList();
 
         if (mounted) {
           setState(() {
-            allPlants = List<Plant>.from(plants);
-            filteredPlants = List<Plant>.from(plants);
+            allPlants = plants;
+            filteredPlants = plants;
+            isLoading = false;
           });
         }
-      } else {
-        print('Failed to fetch plants: ${response.statusCode}');
-        print('Response body: ${response.body}');
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       print('Error fetching plants: $e');
-      print('Stack trace: $stackTrace');
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      setState(() => isLoading = false);
     }
   }
 
@@ -194,9 +212,9 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Identify your plant',
+                'Identify your plant first',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -207,7 +225,7 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
               child: Text(
                 'Search by plant name or use an image to identify.',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Color(0xFF6F6F6F),
                 ),
               ),

@@ -61,7 +61,7 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
                       )
                     : null,
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),

@@ -6,6 +6,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io' show Platform;
 
 import 'screens/main_screen.dart';
 
@@ -36,7 +38,7 @@ Future<void> main() async {
 }
 
 Future<void> _requestPermissions() async {
-  // Request notification permissions with all options enabled
+  // Request notification permissions
   await FirebaseMessaging.instance.requestPermission(
     alert: true,
     announcement: true,
@@ -47,12 +49,18 @@ Future<void> _requestPermissions() async {
     sound: true,
   );
 
-  // Specifically for iOS
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+  // Request Bluetooth permissions
+  if (Platform.isAndroid) {
+    final status = await Permission.bluetooth.request();
+    final scanStatus = await Permission.bluetoothScan.request();
+    final connectStatus = await Permission.bluetoothConnect.request();
+    final locationStatus = await Permission.location.request();
+    
+    developer.log('Bluetooth permission: $status');
+    developer.log('Bluetooth scan permission: $scanStatus');
+    developer.log('Bluetooth connect permission: $connectStatus');
+    developer.log('Location permission: $locationStatus');
+  }
 }
 
 Future<void> _setupForegroundNotification() async {

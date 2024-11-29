@@ -4,8 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import '../screens/sensor_search_screen.dart';
+import 'dart:developer' as dev;
 
-class ConfirmPlantScreen extends StatelessWidget {
+class ConfirmPlantScreen extends StatefulWidget {
   final String id;
   final String plantName;
   final String roomName;
@@ -21,65 +23,92 @@ class ConfirmPlantScreen extends StatelessWidget {
     required this.imageUrl,
   });
 
-  Future<void> _registerPlant(BuildContext context) async {
-    try {
-      final String? fcmToken = dotenv.env['FCM_TOKEN'];
-      
-      print('Starting plant registration with:');
-      print('PlantTypeId: $id');
-      print('CategoryId: $categoryId');
-      print('Nickname: $plantName');
-      print('ImageUrl: $imageUrl');
-      print('RoomName: $roomName');
-      
-      final plantData = {
-        'plantTypeId': id,
-        'categoryId': categoryId,
-        'nickname': plantName,
-        'imageUrl': imageUrl,
-        'roomName': roomName,
-        'status': 'NO_SENSOR',
-        'moisture_range': [30, 70],
-        'current_moisture': 0
-      };
+  @override
+  State<ConfirmPlantScreen> createState() => _ConfirmPlantScreenState();
+}
 
+class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
+  Future<void> _registerPlant(BuildContext context) async {
+    dev.log('Plant ID: ${widget.id}');
+    dev.log('Plant Name: ${widget.plantName}');
+    dev.log('Room Name: ${widget.roomName}');
+    dev.log('Category ID: ${widget.categoryId}');
+    dev.log('Image URL: ${widget.imageUrl}');
+
+    try {
+      final token = dotenv.env['FCM_TOKEN'];
       final response = await http.post(
         Uri.parse('https://api.rootin.me/v1/plants'),
         headers: {
+          'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
           'accept': 'application/json',
-          'Authorization': 'Bearer $fcmToken',
         },
-        body: jsonEncode(plantData),
+        body: json.encode({
+          'plantTypeId': widget.id,
+          'nickname': widget.plantName,
+          'categoryId': widget.categoryId,
+        }),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$plantName added successfully!')),
-          );
-          Navigator.of(context).popUntil((route) => route.isFirst);
-        }
+      if (!mounted) return;
+
+      if (response.statusCode == 201) {
+        dev.log('Plant registered successfully');
+        _navigateToSensorSearch();
       } else {
-        final errorBody = jsonDecode(response.body);
-        throw Exception('Failed to register plant: ${errorBody['detail']}');
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Error'),
+              content: const Text('Failed to register plant'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+          );
+        }
       }
     } catch (e) {
-      print('Error registering plant: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to add plant: ${e.toString()}'),
-            backgroundColor: Colors.red,
+      dev.log('Error registering plant: $e');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to register plant: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
           ),
         );
       }
     }
   }
 
+  void _navigateToSensorSearch() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SensorSearchScreen(
+          plantNickname: widget.plantName,
+          imageUrl: widget.imageUrl,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -155,7 +184,7 @@ class ConfirmPlantScreen extends StatelessWidget {
                         height: 185.51,
                         decoration: ShapeDecoration(
                           image: DecorationImage(
-                            image: NetworkImage(imageUrl),
+                            image: NetworkImage(widget.imageUrl),
                             fit: BoxFit.fill,
                             onError: (exception, stackTrace) => const Icon(
                               Icons.image_not_supported,
@@ -172,7 +201,7 @@ class ConfirmPlantScreen extends StatelessWidget {
                       SizedBox(
                         width: 102,
                         child: Text(
-                          plantName,
+                          widget.plantName,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.black,
@@ -188,7 +217,7 @@ class ConfirmPlantScreen extends StatelessWidget {
                       SizedBox(
                         width: 102,
                         child: Text(
-                          'In $roomName',
+                          'In ${widget.roomName}',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Color(0xFF6F6F6F),
