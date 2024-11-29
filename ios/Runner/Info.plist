@@ -61,5 +61,21 @@
     <string>This app needs access to your photo library to upload and identify plant images.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>This app needs access to your microphone for video functionality.</string>
+
+    <!-- Add these new entries -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>Need Bluetooth permission to connect to plant sensors</string>
+    <key>NSBluetoothPeripheralUsageDescription</key>
+    <string>Need Bluetooth permission to connect to plant sensors</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app needs Local Network access to scan for WiFi networks</string>
+    <key>NSNearbyInteractionUsageDescription</key>
+    <string>This app needs to scan for nearby WiFi networks</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs location access to scan for WiFi networks</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app needs location access to scan for WiFi networks</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>This app needs Local Network access to scan for WiFi networks</string>
 </dict>
 </plist>

@@ -58,17 +58,7 @@ class _NameInputScreenState extends State<NameInputScreen> {
     debugPrint("Plant Subname: ${widget.scientificName}");
     debugPrint("Plant Image URL: ${widget.imageUrl ?? 'No image URL provided'}");
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SiteSelectionScreen(
-          id: "unique_plant_id", // Replace with a real ID if available
-          name: plantNickname,
-          subname: widget.scientificName,
-          imageUrl: widget.imageUrl ?? '',
-        ),
-      ),
-    );
+    _navigateToSiteSelection();
   }
 
   bool get _isValidInput => _nameController.text.isNotEmpty && 
@@ -262,6 +252,26 @@ class _NameInputScreenState extends State<NameInputScreen> {
         Icons.image_not_supported,
         color: Colors.grey,
         size: 50,
+      ),
+    );
+  }
+
+  void _navigateToSiteSelection() {
+    print('Navigating to SiteSelectionScreen with:');
+    print('Nickname: ${_nameController.text}');
+    print('Plant Name: ${widget.plantName}');
+    print('Plant Subname: ${widget.scientificName}');
+    print('Plant Image URL: ${widget.imageUrl}');
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SiteSelectionScreen(
+          id: widget.plantId,
+          name: _nameController.text.trim(),
+          subname: widget.scientificName ?? '',
+          imageUrl: widget.imageUrl,
+        ),
       ),
     );
   }

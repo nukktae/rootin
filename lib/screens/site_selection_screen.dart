@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import './confirm_plant_screen.dart';
+import './room_selection_screen.dart';
+import './sensor_search_screen.dart';
 
 class SiteSelectionScreen extends StatefulWidget {
   final String id;
   final String name;
-  final String subname;
+  final String? subname;
   final String imageUrl;
 
   const SiteSelectionScreen({
     super.key,
     required this.id,
     required this.name,
-    required this.subname,
+    this.subname,
     required this.imageUrl,
   });
 
@@ -23,11 +25,11 @@ class SiteSelectionScreen extends StatefulWidget {
 class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
   int? selectedIndex;
   final List<Map<String, dynamic>> sites = [
-    {'name': 'Living Room', 'id': 1},
-    {'name': 'Kitchen', 'id': 2},
-    {'name': 'Bathroom', 'id': 3},
-    {'name': 'Office', 'id': 4},
-    {'name': 'Bedroom', 'id': 5},
+    {'name': 'Living Room', 'siteName': 'Living Room', 'id': 1},
+    {'name': 'Kitchen', 'siteName': 'Kitchen', 'id': 2},
+    {'name': 'Bathroom', 'siteName': 'Bathroom', 'id': 3},
+    {'name': 'Office', 'siteName': 'Office', 'id': 4},
+    {'name': 'Bedroom', 'siteName': 'Bedroom', 'id': 5},
   ];
 
   bool get isContinueEnabled => selectedIndex != null;
@@ -54,8 +56,30 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
     );
   }
 
+  void _navigateToRoomSelection() {
+    if (selectedIndex != null) {
+      final selectedSite = sites[selectedIndex!];
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RoomSelectionScreen(
+            site: selectedSite['siteName'],
+            id: widget.id,
+            name: widget.name,
+            subname: widget.subname ?? '',
+            imageUrl: widget.imageUrl,
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final name = widget.name;
+    final subname = widget.subname ?? '';
+    final imageUrl = widget.imageUrl;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: SafeArea(
@@ -193,26 +217,11 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: isContinueEnabled
-                        ? () {
-                            final selectedSite = sites[selectedIndex!];
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ConfirmPlantScreen(
-                                  id: widget.id,
-                                  plantName: widget.name,
-                                  roomName: selectedSite['siteName'],
-                                  categoryId: selectedSite['id'],
-                                  imageUrl: widget.imageUrl,
-                                ),
-                              ),
-                            );
-                          }
-                        : null,
+                    onPressed: isContinueEnabled ? _navigateToRoomSelection : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isContinueEnabled ? Colors.black : Colors.grey[300],
+                      backgroundColor: Colors.black,
                       foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
