@@ -44,6 +44,32 @@ class Plant {
   });
 
   factory Plant.fromJson(Map<String, dynamic> json) {
+    // Check if this is plant-types endpoint response (has 'subname' field)
+    if (json.containsKey('subname')) {
+      return Plant(
+        id: json['id']?.toString() ?? '',
+        plantId: '',  // Not available in plant-types endpoint
+        plantTypeId: json['id']?.toString() ?? '',
+        name: json['name']?.toString() ?? '',
+        nickname: '',  // Not available in plant-types endpoint
+        plantTypeName: json['name']?.toString() ?? '',
+        scientificName: json['subname']?.toString() ?? '',
+        imageUrl: json['imageUrl']?.toString() ?? '',
+        description: '',  // Not available in plant-types endpoint
+        category: '',  // Not available in plant-types endpoint
+        status: '',  // Not available in plant-types endpoint
+        currentMoisture: 0.0,  // Not available in plant-types endpoint
+        moistureRange: {'min': 0.0, 'max': 0.0},  // Not available in plant-types endpoint
+        infoDifficulty: '',  // Not available in plant-types endpoint
+        infoWatering: '',  // Not available in plant-types endpoint
+        infoLight: '',  // Not available in plant-types endpoint
+        infoSoilType: '',  // Not available in plant-types endpoint
+        infoRepotting: '',  // Not available in plant-types endpoint
+        infoToxicity: '',  // Not available in plant-types endpoint
+      );
+    }
+    
+    // Original plants endpoint response handling
     return Plant(
       id: json['id']?.toString() ?? '',
       plantId: json['plantId']?.toString() ?? '',
@@ -51,27 +77,27 @@ class Plant {
       name: json['name']?.toString() ?? '',
       nickname: json['nickname']?.toString() ?? '',
       plantTypeName: json['plantTypeName']?.toString() ?? '',
-      scientificName: json['scientificName']?.toString() ?? '',
+      scientificName: json['scientificName']?.toString() ?? json['nickname']?.toString() ?? '',
       imageUrl: json['imageUrl']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       category: json['category']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      currentMoisture: (json['currentMoisture'] as num?)?.toDouble() ?? 0.0,
-      moistureRange: _parseMoistureRange(json['moistureRange']),
-      infoDifficulty: json['infoDifficulty']?.toString() ?? '',
-      infoWatering: json['infoWatering']?.toString() ?? '',
-      infoLight: json['infoLight']?.toString() ?? '',
-      infoSoilType: json['infoSoilType']?.toString() ?? '',
-      infoRepotting: json['infoRepotting']?.toString() ?? '',
-      infoToxicity: json['infoToxicity']?.toString() ?? '',
+      currentMoisture: (json['current_moisture'] as num?)?.toDouble() ?? 0.0,
+      moistureRange: _parseMoistureRange(json['moisture_range']),
+      infoDifficulty: json['info_difficulty']?.toString() ?? '',
+      infoWatering: json['info_watering']?.toString() ?? '',
+      infoLight: json['info_light']?.toString() ?? '',
+      infoSoilType: json['info_soil_type']?.toString() ?? '',
+      infoRepotting: json['info_repotting']?.toString() ?? '',
+      infoToxicity: json['info_toxicity']?.toString() ?? '',
     );
   }
 
   static Map<String, double> _parseMoistureRange(dynamic json) {
-    if (json is Map) {
+    if (json is List && json.length >= 2) {
       return {
-        'min': (json['min'] as num?)?.toDouble() ?? 0.0,
-        'max': (json['max'] as num?)?.toDouble() ?? 0.0,
+        'min': (json[0] as num?)?.toDouble() ?? 0.0,
+        'max': (json[1] as num?)?.toDouble() ?? 0.0,
       };
     }
     return {'min': 0.0, 'max': 0.0};

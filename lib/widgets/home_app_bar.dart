@@ -41,11 +41,10 @@ class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
                       color: Color(0xFFEEEEEE),
                       shape: BoxShape.circle,
                     ),
-                    padding: const EdgeInsets.all(9),
-                    child: SvgPicture.asset(
-                      'assets/icons/add.svg',
-                      width: 30,
-                      height: 30,
+                    child: const Icon(
+                      Icons.add,
+                      color: Color(0xFF8E8E8E),
+                      size: 24,
                     ),
                   ),
                 ),

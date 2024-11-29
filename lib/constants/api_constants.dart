@@ -13,7 +13,7 @@ class ApiConstants {
   static const String plantTypesEndpoint = '/plant-types';
 
   // Full URLs
-  static String getPlantTypesUrl() => '$baseUrl/$apiVersion$plantTypesEndpoint';
+  static String getPlantTypesUrl() => '$baseUrl/$apiVersion/plant-types';
   static String getPlantsUrl() => '$baseUrl/$apiVersion$plantsEndpoint';
   
   // Query Parameters
