@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:convert';
-import 'room_selection_screen.dart';
+import './confirm_plant_screen.dart';
 
 class SiteSelectionScreen extends StatefulWidget {
-  final String id; // Plant ID
-  final String name; // Plant nickname
-  final String subname; // Plant common name
-  final String imageUrl; // Plant image URL
+  final String id;
+  final String name;
+  final String subname;
+  final String imageUrl;
 
   const SiteSelectionScreen({
     super.key,
@@ -20,134 +17,41 @@ class SiteSelectionScreen extends StatefulWidget {
   });
 
   @override
-  _SiteSelectionScreenState createState() => _SiteSelectionScreenState();
+  State<SiteSelectionScreen> createState() => _SiteSelectionScreenState();
 }
 
 class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
-  List<Map<String, dynamic>> sites = [];
   int? selectedIndex;
-  bool isContinueEnabled = false;
+  final List<Map<String, dynamic>> sites = [
+    {'name': 'Living Room', 'id': 1},
+    {'name': 'Kitchen', 'id': 2},
+    {'name': 'Bathroom', 'id': 3},
+    {'name': 'Office', 'id': 4},
+    {'name': 'Bedroom', 'id': 5},
+  ];
 
-  @override
-  void initState() {
-    super.initState();
-    getSites();
-  }
+  bool get isContinueEnabled => selectedIndex != null;
 
-  /// Fetches sites from `/v1/categories`
-  Future<void> getSites() async {
-    final String? fcmToken = dotenv.env['FCM_TOKEN']; // Load FCM token dynamically
-    if (fcmToken == null || fcmToken.isEmpty) {
-      print('Error: FCM Token is missing in .env file');
-      return;
-    }
-
-    final url = Uri.parse('https://api.rootin.me/v1/categories');
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          'accept': 'application/json',
-          'Authorization': 'Bearer $fcmToken', // Use FCM token for authorization
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body)['data'];
-        final List<Map<String, dynamic>> parsedSites = data.map<Map<String, dynamic>>((item) {
-          return {
-            'categoryId': item['id'],
-            'siteName': item['name'],
-          };
-        }).toList();
-
-        setState(() {
-          sites = parsedSites; // Update sites list
-        });
-      } else {
-        print('Failed to load sites. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error occurred while fetching sites: $e');
-    }
-  }
-
-  /// Adds a new site using `/v1/categories`
-  Future<void> addNewSite(String siteName) async {
-    if (siteName.isEmpty) {
-      print('Site name cannot be empty.');
-      return;
-    }
-
-    final String? fcmToken = dotenv.env['FCM_TOKEN'];
-    if (fcmToken == null || fcmToken.isEmpty) {
-      print('Error: FCM Token is missing in .env file');
-      return;
-    }
-
-    final url = Uri.parse('https://api.rootin.me/v1/categories');
-    try {
-      final response = await http.put(
-        url,
-        headers: {
-          'accept': 'application/json',
-          'Authorization': 'Bearer $fcmToken',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({'name': siteName}),
-      );
-
-      if (response.statusCode == 200) {
-        print('New site added: $siteName');
-        await getSites(); // Refresh site list
-      } else {
-        print('Failed to add site. Status code: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error occurred while adding site: $e');
-    }
-  }
-
-  /// Handles site selection
   void onSelectSite(int index) {
     setState(() {
       selectedIndex = index;
-      isContinueEnabled = true;
     });
   }
 
-  /// Opens dialog to add a custom site
-  Future<void> showAddSiteDialog() async {
-    final siteName = await showDialog<String>(
+  void showAddSiteDialog() {
+    showDialog(
       context: context,
-      builder: (context) {
-        String input = '';
-        return AlertDialog(
-          backgroundColor: Colors.white, // Ensure dialog has white background
-          title: const Text('Add New Site'),
-          content: TextField(
-            onChanged: (value) => input = value,
-            decoration: const InputDecoration(
-              hintText: 'Enter site name',
-            ),
+      builder: (context) => AlertDialog(
+        title: const Text('Add Custom Location'),
+        content: const Text('This feature is coming soon!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, null),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, input),
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
-
-    if (siteName != null && siteName.isNotEmpty) {
-      await addNewSite(siteName);
-    }
   }
 
   @override
@@ -295,11 +199,11 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RoomSelectionScreen(
-                                  site: selectedSite['siteName'],
+                                builder: (context) => ConfirmPlantScreen(
                                   id: widget.id,
-                                  name: widget.name,
-                                  subname: widget.subname,
+                                  plantName: widget.name,
+                                  roomName: selectedSite['siteName'],
+                                  categoryId: selectedSite['id'],
                                   imageUrl: widget.imageUrl,
                                 ),
                               ),

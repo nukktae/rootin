@@ -6,12 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../models/plant.dart';
 import '../widgets/filter_modal.dart';
 import '../widgets/care_banner.dart';
 import '../widgets/plant_grid_view.dart';
 import '../screens/add_plant_screen.dart';
 import '../widgets/rootin_header.dart';
 import '../widgets/ai_chat_fab.dart';
+import '../services/plant_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> plantData = [];
+  List<Plant> plantData = [];
   String selectedStatus = 'All Status';
   String selectedLocation = 'All Locations';
   String selectedRoom = 'All Rooms';
@@ -36,10 +38,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _requestFCMToken() async {
     try {
-      String? token = await FirebaseMessaging.instance.getToken();
-      log("FCM Token: $token");
-        } catch (e) {
-      log("Error retrieving FCM Token: $e");
+      for (int i = 0; i < 3; i++) { // Try up to 3 times
+        String? token = await FirebaseMessaging.instance.getToken();
+        if (token != null && token.isNotEmpty) {
+          await dotenv.load();
+          dotenv.env['FCM_TOKEN'] = token;
+          print("FCM Token updated successfully: ${token.substring(0, 10)}..."); // Only print first 10 chars for security
+          return;
+        }
+        await Future.delayed(Duration(seconds: 1)); // Wait before retry
+      }
+      throw Exception('Failed to get valid FCM token after 3 attempts');
+    } catch (e) {
+      print("Error retrieving FCM Token: $e");
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to initialize. Please restart the app.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -59,90 +79,112 @@ class _HomeScreenState extends State<HomeScreen> {
     log("Background FCM Message Received: ${message.notification?.title} - ${message.notification?.body}");
   }
 
-  Future<List<dynamic>> fetchPlants() async {
+  Future<List<Plant>> fetchPlants() async {
     final url = Uri.parse('https://api.rootin.me/v1/plants');
     final String? fcmToken = dotenv.env['FCM_TOKEN'];
 
     if (fcmToken == null || fcmToken.isEmpty) {
-      log('FCM Token is not defined. Check your .env file.');
+      log('FCM Token is not available');
       return [];
     }
 
     final headers = {
       'accept': 'application/json',
+      'Content-Type': 'application/json',
       'Authorization': 'Bearer $fcmToken',
     };
 
     try {
       final response = await http.get(url, headers: headers);
+      log('Plants API Response: ${response.statusCode} - ${response.body}');
+      
       if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        log('API Response: ${response.body}');
-        return responseData['data'] ?? [];
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> plantsJson = jsonResponse['data'] ?? [];
+        return plantsJson.map((json) => Plant.fromJson(json)).toList();
       } else {
-        log('Failed to load plants data: ${response.statusCode}');
-        log('Error response: ${response.body}');
+        log('Failed to fetch plants: ${response.statusCode} ${response.body}');
         return [];
       }
     } catch (e) {
-      log('Error fetching plant data: $e');
+      log('Error fetching plants: $e');
       return [];
     }
   }
 
   Future<void> _refreshPlants() async {
-    final plants = await fetchPlants();
-
-    if (plants.isEmpty) {
-      log("No plants returned from API");
-    } else {
-      log("Total plants fetched: ${plants.length}");
+    try {
+      print('Refreshing plants...');
+      final plantService = PlantService();
+      final plants = await plantService.getPlants();
+      print('Fetched ${plants.length} plants');
+      
+      if (mounted) {
+        setState(() {
+          plantData = plants;
+        });
+      }
+    } catch (e) {
+      print('Error in _refreshPlants: $e');
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load plants. Please try again later.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
-
-    setState(() {
-      plantData = plants.where((plant) {
-        final plantStatus = plant['status'];
-        final plantCategory = plant['category'];
-        final room = plantCategory.split('/').last; // Extract room from category
-
-        log("Evaluating plant: ${plant['nickname']} - Status: $plantStatus, Category: $plantCategory, Room: $room");
-
-        // Status filter
-        if (selectedStatus != 'All Status' && plantStatus != selectedStatus) {
-          log("Plant excluded due to status filter. Expected: $selectedStatus, Found: $plantStatus");
-          return false;
-        }
-
-        // Location filter
-        if (selectedLocation != 'All Locations' && plantCategory != selectedLocation) {
-          log("Plant excluded due to location filter. Expected: $selectedLocation, Found: $plantCategory");
-          return false;
-        }
-
-        // Room filter
-        if (selectedRoom != 'All Rooms' && room != selectedRoom) {
-          log("Plant excluded due to room filter. Expected: $selectedRoom, Found: $room");
-          return false;
-        }
-
-        log("Plant included.");
-        return true;
-      }).toList();
-    });
-
-    log("Filtered plants count: ${plantData.length}");
   }
 
   int getUnderwaterCount() {
-    return plantData.where((plant) {
-      final moistureRange = plant['moisture_range'] as List<dynamic>?;
-      final currentMoisture = plant['current_moisture'] as int?;
-      if (moistureRange != null && currentMoisture != null) {
-        final minMoisture = moistureRange.first as int;
-        return currentMoisture < minMoisture;
-      }
-      return false;
-    }).length;
+    try {
+      return plantData.where((plant) {
+        if (plant is Plant) {
+          // Access the moistureRange property of the Plant class
+          final minMoisture = plant.moistureRange['min'] ?? 0.0;
+          return plant.currentMoisture < minMoisture;
+        }
+        return false;
+      }).length;
+    } catch (e) {
+      print('Error calculating underwater count: $e');
+      return 0;
+    }
+  }
+
+  int getOverwaterCount() {
+    try {
+      return plantData.where((plant) {
+        if (plant is Plant) {
+          // Access the moistureRange property of the Plant class
+          final maxMoisture = plant.moistureRange['max'] ?? 100.0;
+          return plant.currentMoisture > maxMoisture;
+        }
+        return false;
+      }).length;
+    } catch (e) {
+      print('Error calculating overwater count: $e');
+      return 0;
+    }
+  }
+
+  int getHealthyCount() {
+    try {
+      return plantData.where((plant) {
+        if (plant is Plant) {
+          final minMoisture = plant.moistureRange['min'] ?? 0.0;
+          final maxMoisture = plant.moistureRange['max'] ?? 100.0;
+          return plant.currentMoisture >= minMoisture && 
+                 plant.currentMoisture <= maxMoisture;
+        }
+        return false;
+      }).length;
+    } catch (e) {
+      print('Error calculating healthy count: $e');
+      return 0;
+    }
   }
 
   void _openFilterModal() {

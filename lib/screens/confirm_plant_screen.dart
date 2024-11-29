@@ -25,10 +25,6 @@ class ConfirmPlantScreen extends StatelessWidget {
     try {
       final String? fcmToken = dotenv.env['FCM_TOKEN'];
       
-      if (id.isEmpty) {
-        throw Exception('Plant type ID is missing');
-      }
-      
       print('Starting plant registration with:');
       print('PlantTypeId: $id');
       print('CategoryId: $categoryId');
@@ -39,12 +35,13 @@ class ConfirmPlantScreen extends StatelessWidget {
       final plantData = {
         'plantTypeId': id,
         'categoryId': categoryId,
-        'imageUrl': imageUrl,
         'nickname': plantName,
+        'imageUrl': imageUrl,
         'roomName': roomName,
+        'status': 'NO_SENSOR',
+        'moisture_range': [30, 70],
+        'current_moisture': 0
       };
-
-      print('Sending request with data: ${jsonEncode(plantData)}');
 
       final response = await http.post(
         Uri.parse('https://api.rootin.me/v1/plants'),
@@ -55,9 +52,6 @@ class ConfirmPlantScreen extends StatelessWidget {
         },
         body: jsonEncode(plantData),
       );
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (context.mounted) {

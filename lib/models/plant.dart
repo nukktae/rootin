@@ -44,38 +44,12 @@ class Plant {
   });
 
   factory Plant.fromJson(Map<String, dynamic> json) {
-    // Check if this is plant-types endpoint response (has 'subname' field)
-    if (json.containsKey('subname')) {
-      return Plant(
-        id: json['id']?.toString() ?? '',
-        plantId: '',  // Not available in plant-types endpoint
-        plantTypeId: json['id']?.toString() ?? '',
-        name: json['name']?.toString() ?? '',
-        nickname: '',  // Not available in plant-types endpoint
-        plantTypeName: json['name']?.toString() ?? '',
-        scientificName: json['subname']?.toString() ?? '',
-        imageUrl: json['imageUrl']?.toString() ?? '',
-        description: '',  // Not available in plant-types endpoint
-        category: '',  // Not available in plant-types endpoint
-        status: '',  // Not available in plant-types endpoint
-        currentMoisture: 0.0,  // Not available in plant-types endpoint
-        moistureRange: {'min': 0.0, 'max': 0.0},  // Not available in plant-types endpoint
-        infoDifficulty: '',  // Not available in plant-types endpoint
-        infoWatering: '',  // Not available in plant-types endpoint
-        infoLight: '',  // Not available in plant-types endpoint
-        infoSoilType: '',  // Not available in plant-types endpoint
-        infoRepotting: '',  // Not available in plant-types endpoint
-        infoToxicity: '',  // Not available in plant-types endpoint
-      );
-    }
-    
-    // Original plants endpoint response handling
     return Plant(
       id: json['id']?.toString() ?? '',
       plantId: json['plantId']?.toString() ?? '',
       plantTypeId: json['plantTypeId']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
-      nickname: json['nickname']?.toString() ?? '',
+      nickname: json['nickname'] ?? '',
       plantTypeName: json['plantTypeName']?.toString() ?? '',
       scientificName: json['scientificName']?.toString() ?? json['nickname']?.toString() ?? '',
       imageUrl: json['imageUrl']?.toString() ?? '',

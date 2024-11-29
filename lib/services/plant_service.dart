@@ -34,15 +34,45 @@ class PlantService {
 
   Future<List<Plant>> getPlants() async {
     try {
-      final response = await _dio.get('/v1/plants');
-      
-      if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> plantsJson = response.data['data'];
-        return plantsJson.map((json) => Plant.fromJson(json)).toList();
+      final token = dotenv.env['FCM_TOKEN'];
+      if (token == null || token.isEmpty) {
+        throw Exception('FCM token not available');
       }
-      return [];
-    } catch (e) {
+
+      final url = '${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/plants';
+      print('Making request to: $url');
+      print('Using token: $token');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response headers: ${response.headers}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> plantsJson = jsonResponse['data'] ?? [];
+        return plantsJson.map((json) => Plant.fromJson(json)).toList();
+      } else {
+        // Try to parse error message if available
+        try {
+          final errorJson = json.decode(response.body);
+          print('Detailed error: ${errorJson['message'] ?? errorJson['error'] ?? response.body}');
+        } catch (e) {
+          print('Raw error body: ${response.body}');
+        }
+        return [];
+      }
+    } catch (e, stackTrace) {
       print('Error fetching plants: $e');
+      print('Stack trace: $stackTrace');
       return [];
     }
   }
