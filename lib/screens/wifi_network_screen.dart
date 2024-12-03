@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:developer' as dev;
+import 'dart:io';
 
 class WifiNetworkScreen extends StatefulWidget {
   const WifiNetworkScreen({super.key});
@@ -44,23 +45,46 @@ class _WifiNetworkScreenState extends State<WifiNetworkScreen> {
       setState(() {
         _isScanning = true;
         _errorMessage = null;
+        _availableNetworks.clear();
       });
+
+      // Request location permission if not already granted
+      final status = await Permission.location.request();
+      if (!status.isGranted) {
+        setState(() {
+          _errorMessage = 'Location permission is required to scan WiFi networks';
+          _isScanning = false;
+        });
+        return;
+      }
 
       // Get current WiFi name
       _wifiName = await _networkInfo.getWifiName();
       
-      // Simulate getting available networks (since we can't actually scan)
-      // In a real app, you'd use platform-specific code to scan for networks
-      setState(() {
-        _availableNetworks = [
-          'Network_1',
-          'Network_2',
-          'Network_3',
-          'Network_4',
-          'Network_5',
-        ];
-        _isScanning = false;
-      });
+      // On Android, we can get the WiFi scan results
+      if (Platform.isAndroid) {
+        final List<WifiNetwork> networks = await _networkInfo.getWifiList() ?? [];
+        setState(() {
+          _availableNetworks = networks.map((network) => network.ssid).toList();
+          _isScanning = false;
+        });
+      } 
+      // On iOS, we can only get the current network due to platform limitations
+      else if (Platform.isIOS) {
+        if (_wifiName != null) {
+          setState(() {
+            _availableNetworks = [_wifiName!.replaceAll('"', '')];
+            _isScanning = false;
+          });
+        }
+      }
+
+      if (_availableNetworks.isEmpty) {
+        setState(() {
+          _errorMessage = 'No networks found';
+          _isScanning = false;
+        });
+      }
     } catch (e) {
       dev.log('Error scanning networks: $e');
       setState(() {
@@ -141,12 +165,12 @@ class _WifiNetworkScreenState extends State<WifiNetworkScreen> {
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              trailing: Row(
+                              trailing: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.lock, size: 20),
-                                  const SizedBox(width: 8),
-                                  const Icon(Icons.wifi, size: 20),
+                                  Icon(Icons.lock, size: 20),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.wifi, size: 20),
                                 ],
                               ),
                               onTap: () {

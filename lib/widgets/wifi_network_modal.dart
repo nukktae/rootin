@@ -49,7 +49,7 @@ class _WifiNetworkModalState extends State<WifiNetworkModal> with WidgetsBinding
       });
 
       // Get the list of connected devices
-      final connectedDevices = await FlutterBluePlus.connectedDevices;
+      final connectedDevices = FlutterBluePlus.connectedDevices;
       if (connectedDevices.isNotEmpty) {
         connectedDevice = connectedDevices.first;
         

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io';
 
 import '../models/plant.dart';
 import '../widgets/filter_modal.dart';
@@ -38,27 +39,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _requestFCMToken() async {
     try {
-      for (int i = 0; i < 3; i++) { // Try up to 3 times
-        String? token = await FirebaseMessaging.instance.getToken();
-        if (token != null && token.isNotEmpty) {
-          await dotenv.load();
-          dotenv.env['FCM_TOKEN'] = token;
-          print("FCM Token updated successfully: ${token.substring(0, 10)}..."); // Only print first 10 chars for security
-          return;
+      await Future.delayed(const Duration(seconds: 2));
+      
+      if (Platform.isIOS) {
+        // Wait for APNS token first
+        int retryCount = 0;
+        String? apnsToken;
+        
+        while (retryCount < 3 && apnsToken == null) {
+          try {
+            apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+            if (apnsToken != null) break;
+          } catch (e) {
+            // Ignore APNS token errors
+            if (!e.toString().contains('apns-token-not-set')) {
+              print('APNS token error: $e');
+            }
+          }
+          retryCount++;
+          await Future.delayed(const Duration(seconds: 1));
         }
-        await Future.delayed(Duration(seconds: 1)); // Wait before retry
       }
-      throw Exception('Failed to get valid FCM token after 3 attempts');
+      
+      // Now try to get FCM token
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (token != null && token.isNotEmpty) {
+        await dotenv.load();
+        dotenv.env['FCM_TOKEN'] = token;
+        print("FCM Token updated successfully: ${token.substring(0, 10)}...");
+        return;
+      }
+      
+      throw Exception('Failed to get valid FCM token');
     } catch (e) {
-      print("Error retrieving FCM Token: $e");
-      // Show error to user
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to initialize. Please restart the app.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+      // Only print error if it's not the APNS token error
+      if (!e.toString().contains('apns-token-not-set')) {
+        print("Error retrieving FCM Token: $e");
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to initialize. Please try again.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -141,12 +165,13 @@ class _HomeScreenState extends State<HomeScreen> {
   int getUnderwaterCount() {
     try {
       return plantData.where((plant) {
-        if (plant is Plant) {
-          // Access the moistureRange property of the Plant class
-          final minMoisture = plant.moistureRange['min'] ?? 0.0;
-          return plant.currentMoisture < minMoisture;
+        // Exclude plants with UNKNOWN or NO_SENSOR status
+        if (plant.status == 'UNKNOWN' || plant.status == 'NO_SENSOR') {
+          return false;
         }
-        return false;
+        // Access the moistureRange property of the Plant class
+        final minMoisture = plant.moistureRange['min'] ?? 0.0;
+        return plant.currentMoisture < minMoisture;
       }).length;
     } catch (e) {
       print('Error calculating underwater count: $e');
@@ -157,12 +182,13 @@ class _HomeScreenState extends State<HomeScreen> {
   int getOverwaterCount() {
     try {
       return plantData.where((plant) {
-        if (plant is Plant) {
-          // Access the moistureRange property of the Plant class
-          final maxMoisture = plant.moistureRange['max'] ?? 100.0;
-          return plant.currentMoisture > maxMoisture;
+        // Exclude plants with UNKNOWN or NO_SENSOR status
+        if (plant.status == 'UNKNOWN' || plant.status == 'NO_SENSOR') {
+          return false;
         }
-        return false;
+        // Access the moistureRange property of the Plant class
+        final maxMoisture = plant.moistureRange['max'] ?? 100.0;
+        return plant.currentMoisture > maxMoisture;
       }).length;
     } catch (e) {
       print('Error calculating overwater count: $e');
@@ -173,13 +199,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int getHealthyCount() {
     try {
       return plantData.where((plant) {
-        if (plant is Plant) {
-          final minMoisture = plant.moistureRange['min'] ?? 0.0;
-          final maxMoisture = plant.moistureRange['max'] ?? 100.0;
-          return plant.currentMoisture >= minMoisture && 
-                 plant.currentMoisture <= maxMoisture;
+        // Exclude plants with UNKNOWN or NO_SENSOR status
+        if (plant.status == 'UNKNOWN' || plant.status == 'NO_SENSOR') {
+          return false;
         }
-        return false;
+        final minMoisture = plant.moistureRange['min'] ?? 0.0;
+        final maxMoisture = plant.moistureRange['max'] ?? 100.0;
+        return plant.currentMoisture >= minMoisture && 
+               plant.currentMoisture <= maxMoisture;
       }).length;
     } catch (e) {
       print('Error calculating healthy count: $e');

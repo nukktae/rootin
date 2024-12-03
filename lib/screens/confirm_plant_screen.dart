@@ -34,7 +34,7 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
       final token = dotenv.env['FCM_TOKEN'];
       
       // 1. First create the plant
-      final createUrl = '${ApiConstants.baseUrl}/v1/plants';
+      const createUrl = '${ApiConstants.baseUrl}/v1/plants';
       debugPrint('Creating plant with data: ${widget.id}, ${widget.categoryId}, ${widget.imageUrl}');
       
       final createResponse = await http.post(
@@ -54,7 +54,7 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
 
       if (createResponse.statusCode == 200 || createResponse.statusCode == 201) {
         // Get the list of plants to find the most recently created one
-        final getUrl = '${ApiConstants.baseUrl}/v1/plants';
+        const getUrl = '${ApiConstants.baseUrl}/v1/plants';
         final getResponse = await http.get(
           Uri.parse(getUrl),
           headers: {

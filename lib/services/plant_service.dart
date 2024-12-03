@@ -14,14 +14,19 @@ class PlantService {
   PlantService() {
     final token = dotenv.env['FCM_TOKEN'];
     if (token == null || token.isEmpty) {
-      throw Exception('FCM_TOKEN is not configured in .env file');
+      Future.delayed(const Duration(seconds: 3), () {
+        final retryToken = dotenv.env['FCM_TOKEN'];
+        if (retryToken == null || retryToken.isEmpty) {
+          throw Exception('FCM_TOKEN is not configured in .env file');
+        }
+      });
     }
 
     _dio = Dio(BaseOptions(
       baseUrl: dotenv.env['API_URL'] ?? 'https://api.rootin.me',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': token != null ? 'Bearer $token' : '',
       },
     ));
 
@@ -39,7 +44,7 @@ class PlantService {
         throw Exception('FCM token not available');
       }
 
-      final url = '${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/plants';
+      const url = '${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/plants';
       print('Making request to: $url');
       print('Using token: $token');
 
