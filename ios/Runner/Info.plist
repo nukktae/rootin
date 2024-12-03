@@ -56,9 +56,9 @@
 
     <!-- Added permissions for camera and photo library -->
     <key>NSCameraUsageDescription</key>
-    <string>This app needs access to your camera to take photos of plants for identification.</string>
+    <string>We need access to your camera to take plant photos for identification</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>This app needs access to your photo library to upload and identify plant images.</string>
+    <string>We need access to your photo library to select plant photos for identification</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>This app needs access to your microphone for video functionality.</string>
 
