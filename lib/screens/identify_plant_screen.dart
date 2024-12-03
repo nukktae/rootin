@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http_parser/http_parser.dart';
 import 'name_input_screen.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class IdentifyPlantScreen extends StatefulWidget {
   final File imageFile;
@@ -77,6 +78,7 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
       
       if (token.isEmpty) {
         dev.log('Token is empty');
+        if (!mounted) return;
         setState(() {
           _error = 'Authorization token is missing';
           _isLoading = false;
@@ -84,10 +86,35 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
         return;
       }
 
-      // Verify file exists and size
-      dev.log('Image path: ${widget.imageFile.path}');
-      dev.log('Image exists: ${widget.imageFile.existsSync()}');
-      dev.log('Image size: ${widget.imageFile.lengthSync()} bytes');
+      // Check if image exists and is valid
+      if (!widget.imageFile.existsSync()) {
+        if (!mounted) return;
+        setState(() {
+          _error = 'Image file not found';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      // Convert HEIC to JPEG if necessary
+      File imageToUpload = widget.imageFile;
+      if (widget.imageFile.path.toLowerCase().endsWith('.heic')) {
+        final tempDir = await Directory.systemTemp.create();
+        final targetPath = '${tempDir.path}/converted_image.jpg';
+        
+        final result = await FlutterImageCompress.compressAndGetFile(
+          widget.imageFile.path,
+          targetPath,
+          format: CompressFormat.jpeg,
+          quality: 90,
+        );
+        
+        if (result != null) {
+          imageToUpload = File(result.path);
+        } else {
+          throw Exception('Failed to convert HEIC image');
+        }
+      }
 
       final url = Uri.parse('https://api.rootin.me/v1/plant-types/images');
       var request = http.MultipartRequest('POST', url);
@@ -97,11 +124,10 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
         'Accept': 'application/json',
       });
 
-      // Add file to request
+      // Use the converted image
       var multipartFile = await http.MultipartFile.fromPath(
         'file',
-        widget.imageFile.path,
-        contentType: MediaType('image', 'jpeg'),
+        imageToUpload.path,
       );
       request.files.add(multipartFile);
 
@@ -112,6 +138,8 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
       dev.log('Response status: ${response.statusCode}');
       dev.log('Response body: ${response.body}');
 
+      if (!mounted) return;
+      
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (responseData['data'] != null) {
@@ -128,6 +156,7 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
       }
     } catch (e) {
       dev.log('Error during identification: $e');
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;
