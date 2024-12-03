@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/plant.dart';
 import '../widgets/plant_ai_title_bar.dart';
 import '../widgets/input_bar.dart';
@@ -172,6 +173,21 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         backgroundColor: const Color(0xFFF6F6F6),
         elevation: 0,
         automaticallyImplyLeading: false,
+        leading: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xffE7E7E7),
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
+            icon: SvgPicture.asset(
+              'assets/icons/arrow.svg',
+              width: 24,
+              height: 24,
+              colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
         title: PlantAITitleBar(plant: widget.plant),
       ),
       body: Column(

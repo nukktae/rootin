@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../screens/sensor_search_screen.dart';
-import 'dart:developer' as dev;
 import '../constants/api_constants.dart';
 
 class ConfirmPlantScreen extends StatefulWidget {

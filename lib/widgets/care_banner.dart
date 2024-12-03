@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as dev;
 import '../screens/care_screen.dart';
+import '../screens/main_screen.dart';
 
 class CareBanner extends StatelessWidget {
   final int underwaterCount;
@@ -14,12 +15,14 @@ class CareBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const CareScreen(),
-          ),
-        );
+        // Use Navigator to pop to the first route and then set the index
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        // Find the nearest MainScreen and update its state through a static method
+        MainScreenState? mainScreenState = 
+            context.findAncestorStateOfType<MainScreenState>();
+        if (mainScreenState != null) {
+          mainScreenState.setCurrentIndex(1); // Switch to care screen
+        }
       },
       child: Container(
         width: double.infinity,
