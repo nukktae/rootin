@@ -32,7 +32,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
   void initState() {
     super.initState();
     _pageController = PageController(
-      viewportFraction: 0.85,
+      viewportFraction: 0.95,
       initialPage: 0,
     );
     _plantsFuture = PlantService().getPlants().then((plants) {
@@ -113,62 +113,136 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                 
                 SizedBox(
                   height: 350,
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentIndex = index;
-                      });
-                    },
-                    itemCount: plants.length,
-                    itemBuilder: (context, index) {
-                      final plant = plants[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Column(
-                          children: [
-                            Text(
-                              plant.nickname ?? plant.plantTypeName,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              plant.plantTypeName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xff6F6F6F),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'In ${plant.category}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xff6F6F6F),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              width: 225,
-                              height: 225,
-                              decoration: ShapeDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(plant.imageUrl),
-                                  fit: BoxFit.cover,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentIndex = index;
+                          });
+                        },
+                        itemCount: plants.length,
+                        pageSnapping: true,
+                        itemBuilder: (context, index) {
+                          final plant = plants[index];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Column(
+                              children: [
+                                Text(
+                                  plant.nickname ?? plant.plantTypeName,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(40),
+                                const SizedBox(height: 4),
+                                Text(
+                                  plant.plantTypeName,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xff6F6F6F),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'In ${plant.category}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Color(0xff6F6F6F),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  width: 225,
+                                  height: 225,
+                                  decoration: ShapeDecoration(
+                                    image: DecorationImage(
+                                      image: NetworkImage(plant.imageUrl),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(40),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                      
+                      if (_currentIndex > 0)
+                        Positioned(
+                          left: 16,
+                          top: 200,
+                          child: IconButton(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              _pageController.previousPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            icon: Container(
+                              decoration: const BoxDecoration(
+                                color: Color(0xffE7E7E7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SvgPicture.asset(
+                                  'assets/icons/leftarrow.svg',
+                                  width: 24,
+                                  height: 24,
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.black,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      );
-                    },
+                      
+                      if (_currentIndex < plants.length - 1)
+                        Positioned(
+                          right: 16,
+                          top: 200,
+                          child: IconButton(
+                            constraints: const BoxConstraints(),
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                            icon: Container(
+                              decoration: const BoxDecoration(
+                                color: Color(0xffE7E7E7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: SvgPicture.asset(
+                                  'assets/icons/rightarrow.svg',
+                                  width: 24,
+                                  height: 24,
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.black,
+                                    BlendMode.srcIn,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
 
