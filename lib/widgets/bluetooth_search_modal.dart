@@ -67,7 +67,8 @@ class _BluetoothSearchModalState extends State<BluetoothSearchModal> {
           if (mounted) {
             setState(() {
               devices = results.where((result) => 
-                result.device.platformName.isNotEmpty
+                result.device.platformName.isNotEmpty &&
+                result.device.platformName.startsWith('Rootin')
               ).toList();
             });
           }
@@ -206,26 +207,74 @@ class _BluetoothSearchModalState extends State<BluetoothSearchModal> {
 
   Future<void> _connectToDevice(BluetoothDevice device) async {
     try {
-      await device.connect();
+      // Show connecting dialog
       if (mounted) {
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConnectedSensorScreen(
-              device: device,
-              plantNickname: widget.plantNickname,
-              imageUrl: widget.imageUrl,
-            ),
-          ),
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Connecting to sensor...'),
+                ],
+              ),
+            );
+          },
         );
+      }
+
+      // Connect to the device
+      await device.connect(
+        timeout: const Duration(seconds: 10),
+        autoConnect: false,
+      );
+
+      // Wait a bit to ensure connection is stable
+      await Future.delayed(const Duration(seconds: 1));
+
+      // Verify connection state
+      if (device.isConnected) {
+        // Close connecting dialog and modal
+        if (mounted) {
+          Navigator.pop(context); // Close connecting dialog
+          Navigator.pop(context); // Close modal
+          
+          // Navigate to connected screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ConnectedSensorScreen(
+                device: device,
+                plantNickname: widget.plantNickname,
+                imageUrl: widget.imageUrl,
+              ),
+            ),
+          );
+        }
+      } else {
+        throw Exception('Device connection failed');
       }
     } catch (e) {
       dev.log('Failed to connect: $e');
+      // Close connecting dialog if it's open
       if (mounted) {
+        Navigator.pop(context); // Close connecting dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to connect: $e')),
+          SnackBar(
+            content: Text('Failed to connect: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
         );
+      }
+      // Disconnect in case of error
+      try {
+        await device.disconnect();
+      } catch (disconnectError) {
+        dev.log('Error disconnecting: $disconnectError');
       }
     }
   }
