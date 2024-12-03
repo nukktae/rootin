@@ -173,22 +173,37 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         backgroundColor: const Color(0xFFF6F6F6),
         elevation: 0,
         automaticallyImplyLeading: false,
-        leading: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xffE7E7E7),
-            shape: BoxShape.circle,
-          ),
-          child: IconButton(
-            icon: SvgPicture.asset(
-              'assets/icons/arrow.svg',
-              width: 24,
-              height: 24,
-              colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+        leadingWidth: 64,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: SizedBox(
+              width: 36,
+              height: 36,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xffE7E7E7),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/icons/arrow.svg',
+                    width: 18,
+                    height: 18,
+                    colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+                  ),
+                ),
+              ),
             ),
-            onPressed: () => Navigator.pop(context),
           ),
         ),
-        title: PlantAITitleBar(plant: widget.plant),
+        toolbarHeight: 72,
+        centerTitle: true,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 0, left: 16),
+          child: PlantAITitleBar(plant: widget.plant),
+        ),
       ),
       body: Column(
         children: [
