@@ -75,8 +75,6 @@
     <string>This app needs access to location when open to scan for BLE devices.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>This app needs access to location when in the background to maintain BLE connections.</string>
-    <key>NSLocalNetworkUsageDescription</key>
-    <string>This app needs Local Network access to scan for WiFi networks</string>
     <key>LSApplicationQueriesSchemes</key>
     <array>
         <string>http</string>

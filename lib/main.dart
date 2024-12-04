@@ -10,6 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
 
 import 'screens/main_screen.dart';
+import 'firebase_options.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -21,88 +22,59 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 Future<void> main() async {
-  // Ensure proper initialization order
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   
-  try {
-    // Load environment variables first
-    await dotenv.load();
-    
-    // Initialize Firebase with error handling
-    await Firebase.initializeApp().timeout(
-      const Duration(seconds: 5),
-      onTimeout: () => throw Exception('Firebase initialization timeout'),
-    );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
-    if (Platform.isIOS) {
-      try {
-        // Request notification permissions first
-        await FirebaseMessaging.instance.requestPermission(
-          alert: true,
-          badge: true,
-          sound: true,
-          provisional: true
-        );
+  await _requestNotificationPermissions();
+  await _setupNotificationChannel();
+  await _initializeLocalNotifications();
+  
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-        // Set foreground notification options
-        await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+  runApp(const MyApp());
+}
 
-        // Try to get APNS token with retry logic
-        String? apnsToken;
-        int retryCount = 0;
-        while (retryCount < 3 && apnsToken == null) {
-          try {
-            apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-            if (apnsToken != null) {
-              // Explicitly get FCM token after APNS token is available
-              await FirebaseMessaging.instance.getToken(
-                vapidKey: dotenv.env['VAPID_KEY'],
-              );
-              break;
-            }
-            retryCount++;
-            if (retryCount < 3) {
-              await Future.delayed(const Duration(seconds: 2));
-            }
-          } catch (e) {
-            // Suppress the APNS token error
-            if (!e.toString().contains('apns-token-not-set')) {
-              developer.log('Attempt $retryCount to get APNS token failed: $e');
-            }
-          }
-        }
-      } catch (e) {
-        // Suppress the specific APNS token error
-        if (!e.toString().contains('apns-token-not-set')) {
-          developer.log('iOS notification setup error: $e');
-        }
-      }
-    }
+Future<void> _requestNotificationPermissions() async {
+  final messaging = FirebaseMessaging.instance;
+  
+  await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+    provisional: false,
+  );
 
-    // Initialize other services
-    await _requestPermissions();
-    await _setupForegroundNotification();
-    
-    // Set up background message handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    await initializeNotifications();
+  await messaging.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+}
 
-    runApp(const MyApp());
-  } catch (e, stackTrace) {
-    debugPrint('Initialization error: $e');
-    debugPrint('Stack trace: $stackTrace');
-    runApp(const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Failed to initialize app. Please restart.'),
-        ),
-      ),
-    ));
-  }
+Future<void> _initializeLocalNotifications() async {
+  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initializationSettingsIOS = DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
+  
+  const initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (details) {
+      // Handle notification tap
+      developer.log('Notification tapped: ${details.payload}');
+    },
+  );
 }
 
 Future<void> _requestPermissions() async {
@@ -257,38 +229,48 @@ Future<void> registerToken(String token) async {
   }
 }
 
-void showNotification(RemoteMessage message) async {
-  RemoteNotification? notification = message.notification;
-  AndroidNotification? android = message.notification?.android;
+Future<void> showNotification(RemoteMessage message) async {
+  const androidDetails = AndroidNotificationDetails(
+    'high_importance_channel',
+    'High Importance Notifications',
+    importance: Importance.max,
+    priority: Priority.high,
+    showWhen: true,
+  );
 
-  if (notification != null) {
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'default_channel_id',
-      'Default Channel',
-      description: 'This is the default notification channel',
+  const iosDetails = DarwinNotificationDetails(
+    presentAlert: true,
+    presentBadge: true,
+    presentSound: true,
+  );
+
+  const details = NotificationDetails(
+    android: androidDetails,
+    iOS: iosDetails,
+  );
+
+  await flutterLocalNotificationsPlugin.show(
+    message.hashCode,
+    message.notification?.title ?? 'New Message',
+    message.notification?.body ?? '',
+    details,
+    payload: message.data.toString(),
+  );
+}
+
+Future<void> _setupNotificationChannel() async {
+  if (Platform.isAndroid) {
+    const androidChannel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      description: 'This channel is used for important notifications.',
       importance: Importance.max,
     );
 
     await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
-
-    flutterLocalNotificationsPlugin.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          channel.id,
-          channel.name,
-          channelDescription: channel.description,
-          importance: Importance.max,
-          priority: Priority.high,
-          icon: android?.smallIcon ?? '@mipmap/ic_launcher',
-        ),
-        iOS: const DarwinNotificationDetails(),
-      ),
-    );
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(androidChannel);
   }
 }
 

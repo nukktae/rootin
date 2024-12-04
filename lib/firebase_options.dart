@@ -58,7 +58,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '870089196883',
     projectId: 'rootinnotif',
     storageBucket: 'rootinnotif.firebasestorage.app',
-    iosBundleId: 'com.love.fuckyou',
+    iosBundleId: 'com.example.fuckyou',
   );
 
 }
