@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import '../widgets/wifi_network_modal.dart';
+import '../widgets/wifi_network_list_modal.dart';
 
 class ConnectedSensorScreen extends StatelessWidget {
   final BluetoothDevice device;
@@ -19,92 +19,95 @@ class ConnectedSensorScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Back button
-            const Padding(
-              padding: EdgeInsets.all(20),
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: CircleAvatar(
-                  backgroundColor: Color(0xFFEEEEEE),
-                  child: BackButton(color: Colors.black),
-                ),
-              ),
-            ),
-
-            // Title and description
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height - 
+                     MediaQuery.of(context).padding.top - 
+                     MediaQuery.of(context).padding.bottom,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const SizedBox(height: 16),
+                  
+                  // Back Button
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF5F5F5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Title and Subtitle
+                  const Text(
                     'Connected Sensor!',
                     style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 22,
-                      fontFamily: 'Inter',
+                      fontSize: 28,
                       fontWeight: FontWeight.w600,
-                      letterSpacing: -0.22,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Text(
+
+                  const SizedBox(height: 8),
+
+                  const Text(
                     'Now, connect network with your sensor.',
                     style: TextStyle(
+                      fontSize: 16,
                       color: Color(0xFF6F6F6F),
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.28,
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            // Sensor display area
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/sensorsearchlogo.png',
-                      width: 100,
-                      height: 100,
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      device.platformName.isNotEmpty 
-                          ? device.platformName 
-                          : 'Unknown Device',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  const Spacer(flex: 1),
 
-            // Connect Network button
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
+                  // Sensor Icon and Name
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 200,
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.sensors,
+                            size: 100,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Rootin Sensor 2067',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(flex: 1),
+
+                  // Connect Network Button
                   SizedBox(
                     width: double.infinity,
-                    height: 50,
+                    height: 56,
                     child: ElevatedButton(
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
-                          builder: (context) => WifiNetworkModal(
+                          builder: (context) => WifiNetworkListModal(
                             plantNickname: plantNickname,
                             imageUrl: imageUrl,
                           ),
@@ -113,7 +116,7 @@ class ConnectedSensorScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: const Text(
@@ -121,32 +124,31 @@ class ConnectedSensorScreen extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
-                          fontFamily: 'Inter',
                           fontWeight: FontWeight.w600,
-                          letterSpacing: -0.16,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () {
-                      // Add retry logic here
-                    },
-                    child: const Text(
-                      'Try again',
-                      style: TextStyle(
-                        color: Color(0xFF6F6F6F),
-                        fontSize: 14,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
+
+                  // Try Again Button
+                  Center(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text(
+                        'Try again',
+                        style: TextStyle(
+                          color: Color(0xFF6F6F6F),
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

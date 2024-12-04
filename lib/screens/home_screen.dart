@@ -1,11 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/plant.dart';
@@ -17,6 +16,7 @@ import '../widgets/rootin_header.dart';
 import '../widgets/ai_chat_fab.dart';
 import '../services/plant_service.dart';
 import '../services/notification_service.dart';
+import '../widgets/filter_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int) setCurrentIndex;
@@ -47,10 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _testFCM() async {
     final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('FCM Token: $fcmToken');
+    developer.log('FCM Token: $fcmToken');
 
     final settings = await FirebaseMessaging.instance.getNotificationSettings();
-    print('Notification settings: ${settings.authorizationStatus}');
+    developer.log('Notification settings: ${settings.authorizationStatus}');
   }
 
   Future<void> _requestFCMToken() async {
@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
         // Get fresh token
         final token = await FirebaseMessaging.instance.getToken();
         if (token != null) {
-          log("FCM Token: $token");
+          developer.log("FCM Token: $token");
           
           // Save token
           final prefs = await SharedPreferences.getInstance();
@@ -76,13 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
           // Register token with backend
           await _registerTokenWithBackend(token);
         } else {
-          throw Exception('Failed to get FCM token');
+          developer.log('FCM Token is not available');
         }
       } else {
-        throw Exception('Notification permissions not granted');
+        developer.log('Notification permissions not granted');
       }
     } catch (e) {
-      log("Error in FCM setup: $e");
+      developer.log("Error in FCM setup: $e");
       // Don't show error to user, just log it
     }
   }
@@ -100,24 +100,37 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (response.statusCode == 200) {
-        log("Token registered successfully");
+        developer.log("Token registered successfully");
       } else {
-        log("Token registration failed with status: ${response.statusCode}");
+        developer.log("Token registration failed with status: ${response.statusCode}");
       }
     } catch (e) {
-      log("Error registering token: $e");
+      developer.log("Error registering token: $e");
     }
   }
 
   void _setupFCMListeners() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      log("Foreground FCM Message Received: ${message.notification?.title} - ${message.notification?.body}");
+      developer.log('========= Foreground Message Debug =========');
+      developer.log('Message data: ${message.data}');
+      
+      if (message.data.containsKey('body')) {
+        try {
+          final bodyJson = jsonDecode(message.data['body']);
+          developer.log('Parsed foreground message body: $bodyJson');
+          developer.log('Image URL from foreground: ${bodyJson['image_url']}');
+        } catch (e) {
+          developer.log('Error parsing foreground message body: $e');
+        }
+      }
+      developer.log('=========================================');
+
       NotificationService().showNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      log("Background FCM Message Opened: ${message.notification?.title} - ${message.notification?.body}");
-      // Handle notification tap when app is in background
+      developer.log('========= Message Opened Debug =========');
+      developer.log('Opened message data: ${message.data}');
     });
   }
 
@@ -126,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final String? fcmToken = dotenv.env['FCM_TOKEN'];
 
     if (fcmToken == null || fcmToken.isEmpty) {
-      log('FCM Token is not available');
+      developer.log('FCM Token is not available');
       return [];
     }
 
@@ -138,28 +151,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final response = await http.get(url, headers: headers);
-      log('Plants API Response: ${response.statusCode} - ${response.body}');
+      developer.log('Plants API Response: ${response.statusCode} - ${response.body}');
       
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
         final List<dynamic> plantsJson = jsonResponse['data'] ?? [];
         return plantsJson.map((json) => Plant.fromJson(json)).toList();
       } else {
-        log('Failed to fetch plants: ${response.statusCode} ${response.body}');
+        developer.log('Failed to fetch plants: ${response.statusCode} ${response.body}');
         return [];
       }
     } catch (e) {
-      log('Error fetching plants: $e');
+      developer.log('Error fetching plants: $e');
       return [];
     }
   }
 
   Future<void> _refreshPlants() async {
     try {
-      log('Refreshing plants...');
+      developer.log('Refreshing plants...');
       final plantService = PlantService();
       final plants = await plantService.getPlants();
-      log('Fetched ${plants.length} plants');
+      developer.log('Fetched ${plants.length} plants');
       
       if (mounted) {
         setState(() {
@@ -167,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      log('Error in _refreshPlants: $e');
+      developer.log('Error in _refreshPlants: $e');
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -192,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return plant.currentMoisture < minMoisture;
       }).length;
     } catch (e) {
-      log('Error calculating underwater count: $e');
+      developer.log('Error calculating underwater count: $e');
       return 0;
     }
   }
@@ -209,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return plant.currentMoisture > maxMoisture;
       }).length;
     } catch (e) {
-      log('Error calculating overwater count: $e');
+      developer.log('Error calculating overwater count: $e');
       return 0;
     }
   }
@@ -227,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                plant.currentMoisture <= maxMoisture;
       }).length;
     } catch (e) {
-      log('Error calculating healthy count: $e');
+      developer.log('Error calculating healthy count: $e');
       return 0;
     }
   }
@@ -236,25 +249,53 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return FilterModal(
-          selectedStatus: selectedStatus,
-          selectedLocation: selectedLocation,
-          selectedRoom: selectedRoom,
-          onApply: (status, location, room) {
-            setState(() {
-              selectedStatus = status;
-              selectedLocation = location;
-              selectedRoom = room;
-            });
-            _refreshPlants();
-          },
-        );
-      },
+      builder: (context) => FilterBottomSheet(
+        selectedStatus: selectedStatus,
+        selectedLocation: selectedLocation,
+        selectedRoom: selectedRoom,
+        onApply: (status, location, room) {
+          setState(() {
+            selectedStatus = status;
+            selectedLocation = location;
+            selectedRoom = room;
+          });
+          _refreshPlants();
+        },
+      ),
     );
+  }
+
+  List<Plant> getFilteredPlants() {
+    return plantData.where((plant) {
+      // Status filter
+      if (selectedStatus != 'All Status') {
+        String plantStatus = '';
+        if (plant.status == 'HEALTHY') plantStatus = 'Ideal';
+        else if (plant.status == 'UNDERWATER') plantStatus = 'Underwatered';
+        else if (plant.status == 'OVERWATER') plantStatus = 'Overwatered';
+        else if (plant.status == 'WATERLOGGED') plantStatus = 'Water-logged';
+        
+        if (plantStatus != selectedStatus) return false;
+      }
+
+      // Location filter
+      if (selectedLocation != 'All Locations' && 
+          plant.category.split('/')[0] != selectedLocation) {
+        return false;
+      }
+
+      // Room filter
+      if (selectedRoom != 'All Rooms' && 
+          plant.category.split('/').last != selectedRoom) {
+        return false;
+      }
+
+      return true;
+    }).toList();
   }
 
   @override
@@ -366,7 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Transform.translate(
                         offset: const Offset(0, -30),
                         child: PlantGridView(
-                          plants: plantData,
+                          plants: getFilteredPlants(),
                           emptyMessage: "Try to add a plant!",
                         ),
                       ),
@@ -379,7 +420,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: const AIChatFAB(),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const AIChatFAB(),
+        ],
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

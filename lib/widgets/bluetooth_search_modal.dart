@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'dart:developer' as dev;
 import 'dart:async';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import '../screens/connected_sensor_screen.dart';
 
 class BluetoothSearchModal extends StatefulWidget {
@@ -19,117 +18,105 @@ class BluetoothSearchModal extends StatefulWidget {
 }
 
 class _BluetoothSearchModalState extends State<BluetoothSearchModal> {
-  List<ScanResult> devices = [];
+  List<DeviceItem> devices = [];
   bool isScanning = false;
-  String? errorMessage;
-  StreamSubscription<List<ScanResult>>? _scanSubscription;
+  String? connectingDevice;
 
   @override
   void initState() {
     super.initState();
-    _initializeBluetooth();
-  }
-
-  @override
-  void dispose() {
-    _scanSubscription?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _initializeBluetooth() async {
-    try {
-      if (await FlutterBluePlus.isSupported == false) {
-        setState(() => errorMessage = 'Bluetooth is not supported on this device');
-        return;
-      }
-
-      if (await FlutterBluePlus.adapterState.first != BluetoothAdapterState.on) {
-        await FlutterBluePlus.turnOn();
-      }
-
-      _startScan();
-    } catch (e) {
-      dev.log('Error initializing Bluetooth: $e');
-      setState(() => errorMessage = 'Error initializing Bluetooth: $e');
-    }
+    _startScan();
   }
 
   Future<void> _startScan() async {
-    try {
+    setState(() {
+      isScanning = true;
+      devices = [];
+    });
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (mounted) {
       setState(() {
-        isScanning = true;
-        errorMessage = null;
-        devices.clear();
+        devices = [
+          DeviceItem(name: "Rootin Sensor 2067", status: DeviceStatus.notConnected),
+          DeviceItem(name: "My Airpod", status: DeviceStatus.notConnected),
+          DeviceItem(name: "F900S", status: DeviceStatus.notConnected),
+          DeviceItem(name: "MK-300", status: DeviceStatus.notConnected),
+          DeviceItem(name: "NS-01G Pro", status: DeviceStatus.notConnected),
+          DeviceItem(name: "QCC3003", status: DeviceStatus.notConnected),
+          DeviceItem(name: "R-S202 Yamaha", status: DeviceStatus.notConnected),
+        ];
+        isScanning = false;
       });
+    }
+  }
 
-      _scanSubscription = FlutterBluePlus.scanResults.listen(
-        (results) {
-          if (mounted) {
-            setState(() {
-              devices = results.where((result) => 
-                result.device.platformName.isNotEmpty &&
-                result.device.platformName.startsWith('Rootin')
-              ).toList();
-            });
-          }
-        },
-        onError: (e) {
-          dev.log('Scan error: $e');
-          if (mounted) {
-            setState(() {
-              errorMessage = 'Scan error: $e';
-              isScanning = false;
-            });
-          }
-        }
-      );
+  Future<void> _connectToDevice(DeviceItem device) async {
+    setState(() {
+      device.status = DeviceStatus.connecting;
+    });
 
-      await FlutterBluePlus.startScan(
-        timeout: const Duration(seconds: 10),
-        androidUsesFineLocation: false,
-      );
+    // Simulate connection delay
+    await Future.delayed(const Duration(seconds: 2));
 
-      Future.delayed(const Duration(seconds: 10), () {
-        if (mounted) {
-          setState(() => isScanning = false);
-        }
+    if (mounted) {
+      setState(() {
+        device.status = DeviceStatus.connected;
       });
-
-    } catch (e) {
-      dev.log('Error starting scan: $e');
-      if (mounted) {
-        setState(() {
-          errorMessage = 'Error starting scan: $e';
-          isScanning = false;
-        });
+      
+      // Navigate to ConnectedSensorScreen after successful connection
+      if (device.name == "Rootin Sensor 2067") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConnectedSensorScreen(
+              device: MockBluetoothDevice(device.name),
+              plantNickname: widget.plantNickname,
+              imageUrl: widget.imageUrl,
+            ),
+          ),
+        );
       }
     }
   }
 
-  Future<void> _refreshScan() async {
-    if (!isScanning) {
-      devices.clear();
-      await _startScan();
+  String _getButtonText(DeviceStatus status) {
+    switch (status) {
+      case DeviceStatus.connecting:
+        return 'Connecting...';
+      case DeviceStatus.connected:
+        return 'Connected';
+      default:
+        return 'Connect';
+    }
+  }
+
+  Color _getButtonColor(DeviceStatus status) {
+    switch (status) {
+      case DeviceStatus.connecting:
+        return Colors.grey;
+      case DeviceStatus.connected:
+        return Colors.blue;
+      default:
+        return Colors.black;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height * 0.93,
-      clipBehavior: Clip.antiAlias,
-      decoration: const ShapeDecoration(
+      height: MediaQuery.of(context).size.height * 0.7,
+      decoration: const BoxDecoration(
         color: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(60)),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
                   icon: const Icon(Icons.close),
@@ -138,144 +125,92 @@ class _BluetoothSearchModalState extends State<BluetoothSearchModal> {
                 const Text(
                   'Devices in Range',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  onPressed: _refreshScan,
-                ),
+                const SizedBox(width: 48),
               ],
             ),
           ),
-
-          if (errorMessage != null)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                errorMessage!,
-                style: const TextStyle(color: Colors.red),
-              ),
-            ),
-
-          ElevatedButton(
-            onPressed: isScanning ? null : _startScan,
-            child: Text(isScanning ? 'Scanning...' : 'Scan for Devices'),
-          ),
-
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Container(
-                width: double.infinity,
-                decoration: ShapeDecoration(
-                  color: const Color(0xFFF2F2F2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+            child: ListView.builder(
+              itemCount: devices.length,
+              itemBuilder: (context, index) {
+                final device = devices[index];
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                child: isScanning
-                    ? const Center(child: CircularProgressIndicator())
-                    : devices.isEmpty
-                        ? const Center(child: Text('No devices found'))
-                        : ListView.builder(
-                            itemCount: devices.length,
-                            itemBuilder: (context, index) {
-                              final device = devices[index].device;
-                              return ListTile(
-                                title: Text(
-                                  device.platformName.isNotEmpty
-                                      ? device.platformName
-                                      : 'Unknown Device',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                trailing: TextButton(
-                                  onPressed: () => _connectToDevice(device),
-                                  child: const Text('Connect'),
-                                ),
-                              );
-                            },
-                          ),
-              ),
+                  child: ListTile(
+                    title: Text(
+                      device.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: TextButton(
+                      onPressed: device.status == DeviceStatus.notConnected
+                          ? () => _connectToDevice(device)
+                          : null,
+                      child: Text(
+                        _getButtonText(device.status),
+                        style: TextStyle(
+                          color: _getButtonColor(device.status),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Future<void> _connectToDevice(BluetoothDevice device) async {
-    try {
-      // Show connecting dialog
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (BuildContext context) {
-            return const AlertDialog(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Connecting to sensor...'),
-                ],
-              ),
-            );
-          },
-        );
-      }
+enum DeviceStatus {
+  notConnected,
+  connecting,
+  connected,
+}
 
-      // Connect to the device
-      await device.connect(
-        timeout: const Duration(seconds: 10),
-        autoConnect: false,
-      );
+class DeviceItem {
+  final String name;
+  DeviceStatus status;
 
-      // Wait a bit to ensure connection is stable
-      await Future.delayed(const Duration(seconds: 1));
+  DeviceItem({
+    required this.name,
+    required this.status,
+  });
+}
 
-      // Verify connection state
-      if (device.isConnected) {
-        // Close connecting dialog and modal
-        if (mounted) {
-          Navigator.pop(context); // Close connecting dialog
-          Navigator.pop(context); // Close modal
-          
-          // Navigate to connected screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ConnectedSensorScreen(
-                device: device,
-                plantNickname: widget.plantNickname,
-                imageUrl: widget.imageUrl,
-              ),
-            ),
-          );
-        }
-      } else {
-        throw Exception('Device connection failed');
-      }
-    } catch (e) {
-      dev.log('Failed to connect: $e');
-      // Close connecting dialog if it's open
-      if (mounted) {
-        Navigator.pop(context); // Close connecting dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to connect: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      // Disconnect in case of error
-      try {
-        await device.disconnect();
-      } catch (disconnectError) {
-        dev.log('Error disconnecting: $disconnectError');
-      }
-    }
+class MockBluetoothDevice extends BluetoothDevice {
+  @override
+  final String name;
+  
+  MockBluetoothDevice(this.name) : super(remoteId: DeviceIdentifier('mock_id'));
+  
+  @override
+  String get platformName => name;
+  
+  @override
+  Future<void> connect({
+    bool autoConnect = true,
+    int? mtu,
+    Duration timeout = const Duration(seconds: 35),
+  }) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return;
   }
-} 
+  
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
