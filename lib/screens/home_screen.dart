@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/plant.dart';
 import '../widgets/filter_modal.dart';
@@ -15,6 +16,7 @@ import '../screens/add_plant_screen.dart';
 import '../widgets/rootin_header.dart';
 import '../widgets/ai_chat_fab.dart';
 import '../services/plant_service.dart';
+import '../services/notification_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int) setCurrentIndex;
@@ -37,74 +39,86 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _testFCM();
     _requestFCMToken();
     _setupFCMListeners();
     _refreshPlants();
   }
 
+  Future<void> _testFCM() async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    print('FCM Token: $fcmToken');
+
+    final settings = await FirebaseMessaging.instance.getNotificationSettings();
+    print('Notification settings: ${settings.authorizationStatus}');
+  }
+
   Future<void> _requestFCMToken() async {
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      // Request notification permissions first
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
       
-      if (Platform.isIOS) {
-        int retryCount = 0;
-        String? apnsToken;
-        
-        while (retryCount < 3 && apnsToken == null) {
-          try {
-            apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-            if (apnsToken != null) break;
-          } catch (e) {
-            if (!e.toString().contains('apns-token-not-set')) {
-              log('APNS token error: $e');
-            }
-          }
-          retryCount++;
-          await Future.delayed(const Duration(seconds: 1));
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        // Get fresh token
+        final token = await FirebaseMessaging.instance.getToken();
+        if (token != null) {
+          log("FCM Token: $token");
+          
+          // Save token
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('fcm_token', token);
+          dotenv.env['FCM_TOKEN'] = token;
+          
+          // Register token with backend
+          await _registerTokenWithBackend(token);
+        } else {
+          throw Exception('Failed to get FCM token');
         }
+      } else {
+        throw Exception('Notification permissions not granted');
       }
-      
-      // Get FCM token
-      String? token = await FirebaseMessaging.instance.getToken();
-      if (token != null && token.isNotEmpty) {
-        await dotenv.load();
-        dotenv.env['FCM_TOKEN'] = token;
-        log("FCM Token updated: $token");
-        return;
-      }
-      
-      throw Exception('Failed to get valid FCM token');
     } catch (e) {
-      if (!e.toString().contains('apns-token-not-set')) {
-        log("Error retrieving FCM Token: $e");
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to initialize. Please try again.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+      log("Error in FCM setup: $e");
+      // Don't show error to user, just log it
+    }
+  }
+
+  Future<void> _registerTokenWithBackend(String token) async {
+    try {
+      final url = Uri.parse('https://api.rootin.me/v1/register');
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'fcm_token': token}),
+      );
+
+      if (response.statusCode == 200) {
+        log("Token registered successfully");
+      } else {
+        log("Token registration failed with status: ${response.statusCode}");
       }
+    } catch (e) {
+      log("Error registering token: $e");
     }
   }
 
   void _setupFCMListeners() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       log("Foreground FCM Message Received: ${message.notification?.title} - ${message.notification?.body}");
-      // Add this to show notification when app is in foreground
-      showNotification(message);
+      NotificationService().showNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       log("Background FCM Message Opened: ${message.notification?.title} - ${message.notification?.body}");
+      // Handle notification tap when app is in background
     });
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  }
-
-  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    log("Background FCM Message Received: ${message.notification?.title} - ${message.notification?.body}");
   }
 
   Future<List<Plant>> fetchPlants() async {
