@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http_parser/http_parser.dart';
 import 'name_input_screen.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
