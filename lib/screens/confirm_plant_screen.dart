@@ -4,8 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import '../screens/sensor_search_screen.dart';
 import '../constants/api_constants.dart';
+import './bluetooth_search_screen.dart';
 
 class ConfirmPlantScreen extends StatefulWidget {
   final String id;
@@ -129,7 +129,7 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SensorSearchScreen(
+        builder: (context) => BluetoothSearchScreen(
           plantNickname: widget.plantName,
           imageUrl: widget.imageUrl,
         ),
@@ -230,35 +230,29 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
                         ),
                       ),
                       const SizedBox(height: 24),
-                      SizedBox(
-                        width: 102,
-                        child: Text(
-                          widget.plantName,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 22,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            height: 1.2,
-                            letterSpacing: -0.22,
-                          ),
+                      Text(
+                        widget.plantName,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 22,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          height: 1.2,
+                          letterSpacing: -0.22,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      SizedBox(
-                        width: 102,
-                        child: Text(
-                          'In ${widget.roomName}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFF6F6F6F),
-                            fontSize: 16,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            height: 1.2,
-                            letterSpacing: -0.16,
-                          ),
+                      Text(
+                        'In ${widget.roomName}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF6F6F6F),
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          height: 1.2,
+                          letterSpacing: -0.16,
                         ),
                       ),
                     ],

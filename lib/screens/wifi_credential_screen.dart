@@ -167,8 +167,9 @@ class _WifiCredentialScreenState extends State<WifiCredentialScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => FinalStepScreen(
-                  device: widget.device,
                   plantNickname: widget.plantNickname,
+                  sensorId: widget.device.platformName,
+                  networkName: selectedNetwork!,
                   imageUrl: widget.imageUrl,
                 ),
               ),

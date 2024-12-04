@@ -274,7 +274,34 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
                     },
                   ),
           ),
-          if (chatMessages.isEmpty)
+          if (selectedImage != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.grey[200],
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      selectedImage!,
+                      height: 60,
+                      width: 60,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        selectedImage = null;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          if (chatMessages.isEmpty && selectedImage == null)
             SuggestionBar(
               suggestions: _getSuggestions(),
               onSuggestionTap: (suggestion) => _sendMessage(suggestion),

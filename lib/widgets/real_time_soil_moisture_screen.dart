@@ -5,6 +5,7 @@ import 'overview_section.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import '../services/plant_service.dart';
+import '../screens/waterlogged_instructions_screen.dart';
 
 class RealTimeSoilMoistureScreen extends StatefulWidget {
   final Map<String, dynamic> plantDetail;
@@ -20,23 +21,62 @@ class RealTimeSoilMoistureScreen extends StatefulWidget {
   State<RealTimeSoilMoistureScreen> createState() => _RealTimeSoilMoistureScreenState();
 }
 
-class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen> {
+class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen> with SingleTickerProviderStateMixin {
   List<Map<String, dynamic>> historicalData = [];
   Timer? _timer;
   bool _mounted = true;
   final PlantService _plantService = PlantService();
+  
+  // Initialize the animation controller as nullable
+  AnimationController? _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _floatAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
+    _initAnimation();
     _fetchHistoricalData();
     _startTimer();
+  }
+
+  void _initAnimation() {
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.98,
+      end: 1.02,
+    ).animate(CurvedAnimation(
+      parent: _animationController!,
+      curve: Curves.easeInOut,
+    ));
+
+    _floatAnimation = Tween<double>(
+      begin: -8.0,
+      end: 8.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController!,
+      curve: Curves.easeInOut,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController!,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
     _mounted = false;
     _timer?.cancel();
+    _animationController?.dispose();
     super.dispose();
   }
 
@@ -109,16 +149,40 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
     }
   }
 
+  Widget _buildLoadingState() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Center(
+        child: AnimatedBuilder(
+          animation: _animationController!,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, _floatAnimation.value),
+              child: Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Opacity(
+                  opacity: _opacityAnimation.value,
+                  child: Image.asset(
+                    'assets/icons/loading_logo.png',
+                    width: 80,
+                    height: 80,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildWeeklyTrendsChart() {
     if (historicalData.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: const Center(child: Text('No historical data available')),
-      );
+      return _buildLoadingState();
     }
 
     final sortedData = List<Map<String, dynamic>>.from(historicalData)
@@ -159,8 +223,8 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
             child: Row(
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
+                  width: 12,
+                  height: 12,
                   decoration: const BoxDecoration(
                     color: Color(0xFF17C6ED),
                     shape: BoxShape.circle,
@@ -172,6 +236,29 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
                   style: TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE5E7EB),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'Ideal Range (30-70%)',
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -0.24,
                   ),
                 ),
               ],
@@ -189,15 +276,42 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
                 gridData: const FlGridData(show: false),
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
+                  // Ideal range area
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 70),
+                      FlSpot(6, 70),
+                    ],
+                    isCurved: false,
+                    color: Colors.transparent,
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: const Color(0xFFE5E7EB),
+                      cutOffY: 30,
+                      applyCutOffY: true,
+                    ),
+                  ),
+                  // Moisture line
                   LineChartBarData(
                     spots: List.generate(moistureData.length, (index) {
                       return FlSpot(index.toDouble(), moistureData[index]);
                     }),
                     isCurved: true,
+                    curveSmoothness: 0.35,
                     color: const Color(0xFF17C6ED),
                     barWidth: 2,
                     isStrokeCapRound: true,
-                    dotData: const FlDotData(show: false),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, percent, barData, index) {
+                        return FlDotCirclePainter(
+                          radius: 4,
+                          color: Colors.white,
+                          strokeWidth: 2,
+                          strokeColor: const Color(0xFF17C6ED),
+                        );
+                      },
+                    ),
                     belowBarData: BarAreaData(
                       show: true,
                       color: const Color(0xFF17C6ED).withOpacity(0.1),
@@ -219,6 +333,9 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
                             style: const TextStyle(
                               color: Color(0xFF6B7280),
                               fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: -0.24,
                             ),
                           ),
                         );
@@ -236,6 +353,36 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
                     sideTitles: SideTitles(showTitles: false),
                   ),
                 ),
+                backgroundColor: Colors.white,
+                lineTouchData: LineTouchData(
+                  enabled: true,
+                  touchTooltipData: LineTouchTooltipData(
+                    fitInsideHorizontally: true,
+                    fitInsideVertically: true,
+                    tooltipPadding: const EdgeInsets.all(8),
+                    tooltipBorder: const BorderSide(
+                      color: Color(0xFFE5E7EB),
+                      width: 1,
+                    ),
+                    tooltipRoundedRadius: 8,
+                    tooltipMargin: 0,
+                    tooltipHorizontalAlignment: FLHorizontalAlignment.center,
+                    tooltipHorizontalOffset: 0,
+                    getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                      return touchedBarSpots.map((barSpot) {
+                        return LineTooltipItem(
+                          '${barSpot.y.toStringAsFixed(1)}%',
+                          const TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
               ),
             ),
           ),
@@ -251,10 +398,15 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
 
     void handleStatusTap() {
       final upperStatus = status.toUpperCase();
-      if (upperStatus == "WATER_NEEDED") {
+      if (upperStatus == "WATER_NEEDED" || upperStatus == "UNDERWATER") {
         Navigator.pushNamed(context, "/watering");
       } else if (upperStatus == "WATERLOGGED") {
-        Navigator.pushNamed(context, "/instructions");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const WaterloggedInstructionsScreen(),
+          ),
+        );
       }
     }
 
@@ -298,23 +450,7 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: currentMoisture != null
             ? _buildWeeklyTrendsChart()
-            : Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Preparing data...',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF6B7280),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
+            : _buildLoadingState(),
         ),
 
         const Center(

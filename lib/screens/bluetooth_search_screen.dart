@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'dart:developer' as dev;
-import 'dart:async';
-
-import '../screens/wifi_credential_screen.dart';
+import '../widgets/bluetooth_search_modal.dart';
 
 class BluetoothSearchScreen extends StatefulWidget {
   final String plantNickname;
@@ -20,174 +16,115 @@ class BluetoothSearchScreen extends StatefulWidget {
 }
 
 class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
-  List<ScanResult> devices = [];
-  bool isScanning = false;
-  String? errorMessage;
-  StreamSubscription? _scanSubscription;
-  StreamSubscription? _connectionStateSubscription;
-  StreamSubscription? _valueSubscription;
-  bool _isConnecting = false;
-
   @override
   void initState() {
     super.initState();
-    _startScan();
-  }
-
-  @override
-  void dispose() {
-    _scanSubscription?.cancel();
-    _connectionStateSubscription?.cancel();
-    _valueSubscription?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _startScan() async {
-    try {
-      setState(() {
-        isScanning = true;
-        errorMessage = null;
-        devices.clear();
-      });
-
-      await FlutterBluePlus.startScan(timeout: const Duration(seconds: 10));
-
-      _scanSubscription = FlutterBluePlus.scanResults.listen(
-        (results) {
-          if (mounted) {
-            setState(() {
-              devices = results
-                  .where((result) =>
-                      result.device.platformName.isNotEmpty &&
-                      result.device.platformName.startsWith('Rootin'))
-                  .toList();
-            });
-          }
-        },
-        onError: (e) {
-          dev.log('Scan error: $e');
-          if (mounted) {
-            setState(() {
-              errorMessage = 'Scan error: $e';
-              isScanning = false;
-            });
-          }
-        },
-      );
-
-      Future.delayed(const Duration(seconds: 10), () {
-        if (mounted) {
-          setState(() => isScanning = false);
-        }
-      });
-    } catch (e) {
-      dev.log('Error starting scan: $e');
+    // Show the modal after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        setState(() {
-          errorMessage = 'Error starting scan: $e';
-          isScanning = false;
-        });
+        _showBluetoothSearchModal(context);
       }
-    }
+    });
   }
 
-  Future<void> _connectToDevice(BuildContext context, BluetoothDevice device) async {
-    if (_isConnecting) return;
-    
-    setState(() {
-      _isConnecting = true;
-      errorMessage = null;
-    });
-
-    BuildContext? dialogContext;
-
-    try {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          dialogContext = context;
-          return const PopScope(
-            canPop: false,
-            child: AlertDialog(
-              title: Text('Connecting...'),
-              content: CircularProgressIndicator(),
-            ),
-          );
-        },
-      );
-
-      dev.log('Connecting to device...');
-      await device.connect(timeout: const Duration(seconds: 5));
-      
-      if (!device.isConnected) {
-        throw Exception('Failed to establish connection');
-      }
-
-      dev.log('Discovering services...');
-      List<BluetoothService> services = await device.discoverServices();
-      
-      bool foundService = false;
-      for (var service in services) {
-        dev.log('Found service: ${service.uuid}');
-        
-        if (service.uuid.toString().toLowerCase() == '12345678-1234-5678-1234-56789abcdef0') {
-          for (var characteristic in service.characteristics) {
-            if (characteristic.uuid.toString().toLowerCase() == '12345678-1234-5678-1234-56789abcdef1') {
-              foundService = true;
-              
-              await characteristic.setNotifyValue(true);
-              
-              await characteristic.write([0x01], withoutResponse: false);
-              
-              if (!mounted) return;
-              if (dialogContext != null) {
-                Navigator.pop(dialogContext!);
-              }
-              
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => WifiCredentialScreen(
-                    device: device,
-                    plantNickname: widget.plantNickname,
-                    imageUrl: widget.imageUrl,
+  void _showBuySensorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF5F5F5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.sensors,
+                    size: 100,
+                    color: Colors.black,
                   ),
                 ),
-              );
-              break;
-            }
-          }
-          if (foundService) break;
-        }
-      }
-      
-      if (!foundService) {
-        throw Exception('Required service not found');
-      }
-
-    } catch (e) {
-      dev.log('Connection error: $e');
-      if (mounted && dialogContext != null) {
-        Navigator.pop(dialogContext!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Connection failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
+                const SizedBox(height: 24),
+                const Text(
+                  'Rootin Smart Sensor',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Monitor your plant\'s health with our smart sensor',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF6F6F6F),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      // Show the Bluetooth search modal after closing the dialog
+                      _showBluetoothSearchModal(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Shop Now',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Maybe Later',
+                    style: TextStyle(
+                      color: Color(0xFF6F6F6F),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
-      }
-      try {
-        await device.disconnect();
-      } catch (disconnectError) {
-        dev.log('Error disconnecting: $disconnectError');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isConnecting = false);
-      }
-    }
+      },
+    );
+  }
+
+  void _showBluetoothSearchModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => BluetoothSearchModal(
+        plantNickname: widget.plantNickname,
+        imageUrl: widget.imageUrl,
+      ),
+    );
   }
 
   @override
@@ -195,54 +132,99 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Text(
-                    'Available Devices',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              
+              // Back Button
+              Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF5F5F5),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
-            ),
-            if (errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(errorMessage!, style: const TextStyle(color: Colors.red)),
+
+              const SizedBox(height: 40),
+
+              // Title
+              const Text(
+                'Searching Sensor...',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            Expanded(
-              child: isScanning
-                  ? const Center(child: CircularProgressIndicator())
-                  : devices.isEmpty
-                      ? const Center(child: Text("No devices found. Try scanning again."))
-                      : ListView.builder(
-                          itemCount: devices.length,
-                          itemBuilder: (context, index) {
-                            final device = devices[index].device;
-                            return ListTile(
-                              title: Text(device.platformName),
-                              subtitle: Text(device.remoteId.toString()),
-                              trailing: TextButton(
-                                onPressed: _isConnecting ? null : () => _connectToDevice(context, device),
-                                child: const Text('Connect'),
-                              ),
-                            );
-                          },
-                        ),
-            ),
-          ],
+
+              const SizedBox(height: 8),
+
+              // Description
+              const Text(
+                'To enter pairing mode, turn on Bluetooth mode and press the button on your sensor for about 3-5s.',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Color(0xFF6F6F6F),
+                  height: 1.5,
+                ),
+              ),
+
+              const Spacer(),
+
+              // Sensor Icon with Search Button
+              Center(
+                child: GestureDetector(
+                  onTap: () => _showBluetoothSearchModal(context),
+                  child: Container(
+                    width: 200,
+                    height: 200,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF5F5F5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.sensors,
+                      size: 100,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Buy Sensor Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: () => _showBuySensorDialog(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Buy a sensor',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: isScanning ? null : _startScan,
-        child: Icon(isScanning ? Icons.stop : Icons.refresh),
       ),
     );
   }
