@@ -10,27 +10,39 @@ import '../screens/notification_settings_screen.dart';
 import '../widgets/ai_chat_fab.dart';
 
 class CareScreen extends StatefulWidget {
-  const CareScreen({super.key});
+  final Function(int) setCurrentIndex;
+
+  const CareScreen({
+    super.key,
+    required this.setCurrentIndex,
+  });
 
   @override
-  CareScreenState createState() => CareScreenState();
+  State<CareScreen> createState() => _CareScreenState();
 }
 
-class CareScreenState extends State<CareScreen> with SingleTickerProviderStateMixin {
+class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late Future<List<Plant>> _plantsFuture;
+  final PlantService _plantService = PlantService();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _plantsFuture = PlantService().getPlants();
+    _refreshPlants();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshPlants() async {
+    setState(() {
+      _plantsFuture = _plantService.getPlants();
+    });
   }
 
   @override

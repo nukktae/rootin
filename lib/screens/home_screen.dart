@@ -17,7 +17,12 @@ import '../widgets/ai_chat_fab.dart';
 import '../services/plant_service.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(int) setCurrentIndex;
+
+  const HomeScreen({
+    super.key,
+    required this.setCurrentIndex,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -138,10 +143,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _refreshPlants() async {
     try {
-      print('Refreshing plants...');
+      log('Refreshing plants...');
       final plantService = PlantService();
       final plants = await plantService.getPlants();
-      print('Fetched ${plants.length} plants');
+      log('Fetched ${plants.length} plants');
       
       if (mounted) {
         setState(() {
@@ -149,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       }
     } catch (e) {
-      print('Error in _refreshPlants: $e');
+      log('Error in _refreshPlants: $e');
       // Show error to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -174,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return plant.currentMoisture < minMoisture;
       }).length;
     } catch (e) {
-      print('Error calculating underwater count: $e');
+      log('Error calculating underwater count: $e');
       return 0;
     }
   }
@@ -191,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return plant.currentMoisture > maxMoisture;
       }).length;
     } catch (e) {
-      print('Error calculating overwater count: $e');
+      log('Error calculating overwater count: $e');
       return 0;
     }
   }
@@ -209,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                plant.currentMoisture <= maxMoisture;
       }).length;
     } catch (e) {
-      print('Error calculating healthy count: $e');
+      log('Error calculating healthy count: $e');
       return 0;
     }
   }
@@ -304,7 +309,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      CareBanner(underwaterCount: getUnderwaterCount()),
+                      CareBanner(
+                        underwaterCount: getUnderwaterCount(),
+                        setCurrentIndex: widget.setCurrentIndex,
+                      ),
                       const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

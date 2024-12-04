@@ -1,28 +1,20 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as dev;
-import '../screens/main_screen.dart';
 
 class CareBanner extends StatelessWidget {
+  final Function(int) setCurrentIndex;
   final int underwaterCount;
 
   const CareBanner({
     super.key,
+    required this.setCurrentIndex,
     required this.underwaterCount,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        // Use Navigator to pop to the first route and then set the index
-        Navigator.of(context).popUntil((route) => route.isFirst);
-        // Find the nearest MainScreen and update its state through a static method
-        MainScreenState? mainScreenState = 
-            context.findAncestorStateOfType<MainScreenState>();
-        if (mainScreenState != null) {
-          mainScreenState.setCurrentIndex(1); // Switch to care screen
-        }
-      },
+      onTap: () => setCurrentIndex(1),
       child: Container(
         width: double.infinity,
         height: 104,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:fl_chart/fl_chart.dart';
 
 import '../widgets/real_time_soil_moisture_screen.dart';
 import '../widgets/care_tips_section.dart';
