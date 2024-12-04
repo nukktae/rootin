@@ -29,12 +29,6 @@ class PlantService {
         'Authorization': token != null ? 'Bearer $token' : '',
       },
     ));
-
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      error: true,
-    ));
   }
 
   Future<List<Plant>> getPlants() async {
@@ -109,15 +103,45 @@ class PlantService {
   }
 
   Future<List<Map<String, dynamic>>> fetchPlantHistory(String token) async {
-    final response = await http.get(
-      Uri.parse('https://1odd45uk4i.execute-api.us-west-1.amazonaws.com/sleep/detail?token=$token'),
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      return data.cast<Map<String, dynamic>>();
-    } else {
-      throw Exception('Failed to load plant history');
+    try {
+      final url = 'https://1odd45uk4i.execute-api.us-west-1.amazonaws.com/sleep/detail?token=$token';
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode == 200) {
+        final List<dynamic> responseData = json.decode(response.body);
+        final Map<String, Map<String, dynamic>> hourlyData = {};
+        
+        for (var item in responseData) {
+          final timestamp = int.parse(item['timestamp'].toString());
+          final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
+          final value = (item['event_values'] as List).first;
+          final plantId = item['plant_id'];
+          
+          final hourKey = '${dateTime.year}-${dateTime.month}-${dateTime.day}-${dateTime.hour}';
+          final key = '$hourKey-$plantId';
+          
+          if (!hourlyData.containsKey(key) || 
+              (hourlyData[key]!['timestamp'] as int) < timestamp) {
+            hourlyData[key] = {
+              'plant_id': plantId,
+              'event_values': [value],
+              'timestamp': timestamp,
+              'plant_name': item['plant_name'],
+              'humidity_min': item['humidity_min'],
+              'humidity_max': item['humidity_max'],
+            };
+          }
+        }
+        
+        final List<Map<String, dynamic>> sortedData = hourlyData.values.toList()
+          ..sort((a, b) => (b['timestamp'] as int).compareTo(a['timestamp'] as int));
+        
+        return sortedData;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
     }
   }
 
@@ -248,13 +272,13 @@ class PlantService {
   Future<List<Plant>> fetchCombinedPlantData() async {
     try {
       // Fetch data from both APIs
-      final hojunData = await fetchPlants();  // Your existing fetchPlants method
+      final hojunData = await fetchPlants();
       final kihoonData = await fetchPlantHistory(dotenv.env['FCM_TOKEN'] ?? '');
 
       // Transform and combine the data
       final combinedData = _transformer.combineAndTransformData(
         hojunData,
-        kihoonData
+        kihoonData.toList(),
       );
 
       // Convert to Plant objects

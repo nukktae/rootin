@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 import '../widgets/real_time_soil_moisture_screen.dart';
 import '../widgets/care_tips_section.dart';
@@ -64,9 +65,54 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
         return;
       }
       
-      final history = await PlantService().fetchPlantHistory(fcmToken);
+      final response = await PlantService().fetchPlantHistory(fcmToken);
+      
+      // Get readings with more variation
+      final List<MapEntry<DateTime, double>> readings = [];
+      
+      for (var item in response) {
+        try {
+          final timestamp = (int.parse(item['timestamp'].toString()) / 1000).floor();
+          final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+          final value = double.parse(item['event_values'].first.toString());
+          
+          readings.add(MapEntry(dateTime, value));
+        } catch (e) {
+          print('Error processing reading: $e');
+          continue;
+        }
+      }
+
+      // Sort by date in ascending order (oldest first)
+      readings.sort((a, b) => a.key.compareTo(b.key));
+
+      // Take one reading per day
+      final Map<String, double> dailyReadings = {};
+      for (var reading in readings) {
+        final dateKey = '${reading.key.year}-${reading.key.month}-${reading.key.day}';
+        if (!dailyReadings.containsKey(dateKey)) {
+          dailyReadings[dateKey] = reading.value;
+        }
+      }
+
+      // Get the readings in correct order
+      final sortedDays = dailyReadings.keys.toList()..sort();
+      final List<double> finalReadings = sortedDays
+          .take(7)
+          .map((key) => dailyReadings[key]!)
+          .toList();
+
+      print('\nFinal readings:');
+      for (var i = 0; i < finalReadings.length; i++) {
+        final date = DateTime.now().subtract(Duration(days: (finalReadings.length - 1 - i)));
+        print('${date.month}/${date.day}: ${finalReadings[i]}%');
+      }
+
       setState(() {
-        historicalData = history;
+        historicalData = finalReadings.map((value) => {
+          'value': value,
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        }).toList();
       });
     } catch (e) {
       print('Error loading plant history: $e');

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:developer' as dev;
-import '../screens/care_screen.dart';
 import '../screens/main_screen.dart';
 
 class CareBanner extends StatelessWidget {

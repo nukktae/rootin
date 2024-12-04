@@ -8,14 +8,45 @@ class WeeklyTrendsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('Historical Data received: ${historicalData.length}'); // Debug print
+
+    if (historicalData.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Center(child: Text('No historical data available')),
+      );
+    }
+
     // Sort data by timestamp in descending order
     final sortedData = List<Map<String, dynamic>>.from(historicalData)
-      ..sort((a, b) => (b['timestamp'] as int).compareTo(a['timestamp'] as int));
+      ..sort((a, b) {
+        try {
+          final timestampA = DateTime.parse(a['timestamp'].toString()).millisecondsSinceEpoch;
+          final timestampB = DateTime.parse(b['timestamp'].toString()).millisecondsSinceEpoch;
+          return timestampB.compareTo(timestampA);
+        } catch (e) {
+          return 0;
+        }
+      });
+
+    print('Sorted Data length: ${sortedData.length}'); // Debug print
 
     // Get the most recent 7 readings
     final recentReadings = sortedData.take(7).map((reading) {
-      return reading['event_values'][0].toDouble();
+      try {
+        final values = reading['event_values'] as List;
+        return values.first.toDouble();
+      } catch (e) {
+        return 0.0;
+      }
     }).toList();
+
+    print('Recent readings: $recentReadings'); // Debug print
 
     // Reverse to show oldest to newest
     final moistureData = recentReadings.reversed.toList();
@@ -45,27 +76,10 @@ class WeeklyTrendsChart extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 const Text(
-                  'Soil Moisture',
+                  'Moisture Level',
                   style: TextStyle(
                     color: Color(0xFF6B7280),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE5E7EB),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'Ideal Range (30-70%)',
-                  style: TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -119,8 +133,9 @@ class WeeklyTrendsChart extends StatelessWidget {
                     sideTitles: SideTitles(
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
+                        if (value.toInt() >= moistureData.length) return const Text('');
                         final date = DateTime.now().subtract(
-                          Duration(days: (6 - value).toInt()),
+                          Duration(days: (moistureData.length - 1 - value.toInt())),
                         );
                         return Padding(
                           padding: const EdgeInsets.only(top: 8),
