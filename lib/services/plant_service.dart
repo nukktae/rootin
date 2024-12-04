@@ -2,24 +2,63 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/plant.dart';
 import 'dart:convert';
+import 'dart:developer' as dev;
 import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
 import '../services/data_transformer_service.dart';
 import 'dart:math' as math;
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
+Future<void> showNotification(RemoteMessage message) async {
+  const androidDetails = AndroidNotificationDetails(
+    'high_importance_channel',
+    'High Importance Notifications',
+    importance: Importance.max,
+    priority: Priority.high,
+    showWhen: true,
+  );
+
+  const iosDetails = DarwinNotificationDetails(
+    presentAlert: true,
+    presentBadge: true,
+    presentSound: true,
+  );
+
+  const details = NotificationDetails(
+    android: androidDetails,
+    iOS: iosDetails,
+  );
+
+  await flutterLocalNotificationsPlugin.show(
+    message.hashCode,
+    message.notification?.title ?? 'New Message',
+    message.notification?.body ?? '',
+    details,
+    payload: message.data.toString(),
+  );
+}
 class PlantService {
   late final Dio _dio;
   final DataTransformerService _transformer = DataTransformerService();
   
   PlantService() {
-    final token = dotenv.env['FCM_TOKEN'];
+    _initializeDio();
+  }
+
+  Future<void> _initializeDio() async {
+    String? token = dotenv.env['FCM_TOKEN'];
+    
     if (token == null || token.isEmpty) {
-      Future.delayed(const Duration(seconds: 3), () {
-        final retryToken = dotenv.env['FCM_TOKEN'];
-        if (retryToken == null || retryToken.isEmpty) {
-          throw Exception('FCM_TOKEN is not configured in .env file');
-        }
-      });
+      // Try to get a new token
+      token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        dotenv.env['FCM_TOKEN'] = token;
+      }
     }
 
     _dio = Dio(BaseOptions(
@@ -29,6 +68,35 @@ class PlantService {
         'Authorization': token != null ? 'Bearer $token' : '',
       },
     ));
+
+    // Add interceptor to handle token refreshing
+    _dio.interceptors.add(InterceptorsWrapper(
+      onError: (error, handler) async {
+        if (error.response?.statusCode == 403) {
+          // Token is invalid, try to refresh it
+          final newToken = await FirebaseMessaging.instance.getToken();
+          if (newToken != null) {
+            dotenv.env['FCM_TOKEN'] = newToken;
+            error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
+            
+            // Retry the request with new token
+            return handler.resolve(await _dio.fetch(error.requestOptions));
+          }
+        }
+        return handler.next(error);
+      },
+    ));
+  }
+
+  Future<String?> _getValidToken() async {
+    String? token = dotenv.env['FCM_TOKEN'];
+    if (token == null || token.isEmpty) {
+      token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        dotenv.env['FCM_TOKEN'] = token;
+      }
+    }
+    return token;
   }
 
   Future<List<Plant>> getPlants() async {
@@ -146,21 +214,37 @@ class PlantService {
   }
 
   Future<List<dynamic>> fetchPlants() async {
-    final String? fcmToken = dotenv.env['FCM_TOKEN'];
+    final token = await _getValidToken();
+    if (token == null) {
+      dev.log('Could not obtain valid FCM token');
+      return [];
+    }
     
-    final response = await http.get(
-      Uri.parse('https://api.rootin.me/v1/plants'),
-      headers: {
-        'accept': 'application/json',
-        'Authorization': 'Bearer $fcmToken',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.rootin.me/v1/plants'),
+        headers: {
+          'accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      return data['data'] ?? [];
-    } else {
-      print('Failed to fetch plants: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['data'] ?? [];
+      } else if (response.statusCode == 403) {
+        // Token is invalid, try to refresh it
+        final newToken = await FirebaseMessaging.instance.getToken();
+        if (newToken != null) {
+          dotenv.env['FCM_TOKEN'] = newToken;
+          // Retry the request with new token
+          return fetchPlants();
+        }
+      }
+      dev.log('Failed to fetch plants: ${response.statusCode} - ${response.body}');
+      return [];
+    } catch (e) {
+      dev.log('Error fetching plants: $e');
       return [];
     }
   }

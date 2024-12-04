@@ -47,7 +47,6 @@ class _HomeScreenState extends State<HomeScreen> {
       await Future.delayed(const Duration(seconds: 2));
       
       if (Platform.isIOS) {
-        // Wait for APNS token first
         int retryCount = 0;
         String? apnsToken;
         
@@ -56,9 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
             apnsToken = await FirebaseMessaging.instance.getAPNSToken();
             if (apnsToken != null) break;
           } catch (e) {
-            // Ignore APNS token errors
             if (!e.toString().contains('apns-token-not-set')) {
-              print('APNS token error: $e');
+              log('APNS token error: $e');
             }
           }
           retryCount++;
@@ -66,20 +64,19 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
       
-      // Now try to get FCM token
+      // Get FCM token
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null && token.isNotEmpty) {
         await dotenv.load();
         dotenv.env['FCM_TOKEN'] = token;
-        print("FCM Token updated successfully: ${token.substring(0, 10)}...");
+        log("FCM Token updated: $token");
         return;
       }
       
       throw Exception('Failed to get valid FCM token');
     } catch (e) {
-      // Only print error if it's not the APNS token error
       if (!e.toString().contains('apns-token-not-set')) {
-        print("Error retrieving FCM Token: $e");
+        log("Error retrieving FCM Token: $e");
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -95,6 +92,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void _setupFCMListeners() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       log("Foreground FCM Message Received: ${message.notification?.title} - ${message.notification?.body}");
+      // Add this to show notification when app is in foreground
+      showNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
