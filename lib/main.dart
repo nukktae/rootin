@@ -11,29 +11,49 @@ import 'dart:io' show Platform;
 
 import 'screens/main_screen.dart';
 import 'firebase_options.dart';
+import 'services/notification_service.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  developer.log("Background message received: ${message.notification?.title}");
-  showNotification(message);
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  print("Handling a background message: ${message.messageId}");
+  await NotificationService().showNotification(message);
 }
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
-  
+
+  // Initialize Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  await _requestNotificationPermissions();
-  await _setupNotificationChannel();
-  await _initializeLocalNotifications();
-  
+  // Initialize notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Set up FCM
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // Request permission (especially important for iOS)
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  // Set up foreground notification presentation options
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
 
   runApp(const MyApp());
 }

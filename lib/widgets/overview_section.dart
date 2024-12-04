@@ -2,14 +2,55 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class OverviewSection extends StatelessWidget {
-  final double soilMoisture; // From backend API
-  final int wateringIntervalDays; // Each plant has different interval days
+  final double soilMoisture;
+  final List<Map<String, dynamic>> moistureHistory;
+  final String plantId;
 
   const OverviewSection({
     super.key,
     required this.soilMoisture,
-    required this.wateringIntervalDays,
+    required this.moistureHistory,
+    required this.plantId,
   });
+
+  int calculateDaysUntilWatering() {
+    if (moistureHistory.isEmpty) return 7; // Default fallback
+    
+    // Get the most recent readings
+    final recentReadings = moistureHistory
+        .where((data) => data['plant_id'].toString() == plantId)
+        .take(24) // Last 24 readings
+        .map((data) => data['event_values'][0] as double)
+        .toList();
+
+    if (recentReadings.isEmpty) return 7;
+
+    // Calculate moisture loss rate per hour
+    final moistureLossRate = _calculateMoistureLossRate(recentReadings);
+    
+    // Get thresholds from the data - with null safety
+    final minHumidity = moistureHistory.first['humidity_min'] as num? ?? 30.0;
+    final currentMoisture = recentReadings.first;
+    
+    // Calculate hours until minimum threshold is reached
+    final moistureUntilMin = currentMoisture - minHumidity;
+    final hoursUntilWatering = moistureUntilMin / moistureLossRate;
+    
+    // Convert to days and round up, ensure positive value
+    return (hoursUntilWatering / 24).ceil().clamp(0, 7);
+  }
+
+  double _calculateMoistureLossRate(List<double> readings) {
+    if (readings.length < 2) return 0.5; // Default rate if not enough data
+    
+    // Calculate average loss per hour
+    final totalLoss = readings.first - readings.last;
+    final hours = readings.length;
+    
+    // Ensure we don't return zero or negative rate
+    final rate = (totalLoss / hours).abs();
+    return rate < 0.1 ? 0.1 : rate; // Minimum rate of 0.1% per hour
+  }
 
   String getMoistureStatus(double moisture) {
     if (moisture < 30) {
@@ -181,7 +222,7 @@ class OverviewSection extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      wateringIntervalDays == 0 ? 'Today' : wateringIntervalDays.toString(),
+                      calculateDaysUntilWatering() == 0 ? 'Today' : calculateDaysUntilWatering().toString(),
                       style: const TextStyle(
                         color: Color(0xFFFFB749),
                         fontSize: 28,
@@ -190,7 +231,7 @@ class OverviewSection extends StatelessWidget {
                         height: 1.2,
                       ),
                     ),
-                    if (wateringIntervalDays != 0)
+                    if (calculateDaysUntilWatering() != 0)
                       const Text(
                         'days later',
                         style: TextStyle(

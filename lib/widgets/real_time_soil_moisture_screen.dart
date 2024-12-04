@@ -275,7 +275,8 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
           child: currentMoisture != null 
             ? OverviewSection(
                 soilMoisture: currentMoisture.toDouble(),
-                wateringIntervalDays: 7,
+                moistureHistory: historicalData,
+                plantId: widget.plantDetail['plantId'].toString(),
               )
             : const Text("No moisture data available"),
         ),

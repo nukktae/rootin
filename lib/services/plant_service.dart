@@ -8,8 +8,8 @@ import '../constants/api_constants.dart';
 import '../services/data_transformer_service.dart';
 import 'dart:math' as math;
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -51,16 +51,8 @@ class PlantService {
   }
 
   Future<void> _initializeDio() async {
-    String? token = dotenv.env['FCM_TOKEN'];
+    String? token = await _getValidToken();  // Get fresh token
     
-    if (token == null || token.isEmpty) {
-      // Try to get a new token
-      token = await FirebaseMessaging.instance.getToken();
-      if (token != null) {
-        dotenv.env['FCM_TOKEN'] = token;
-      }
-    }
-
     _dio = Dio(BaseOptions(
       baseUrl: dotenv.env['API_URL'] ?? 'https://api.rootin.me',
       headers: {
@@ -69,18 +61,25 @@ class PlantService {
       },
     ));
 
-    // Add interceptor to handle token refreshing
+    // Add interceptor for token refresh
+    _dio.interceptors.clear();  // Clear existing interceptors
     _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // Always get fresh token before request
+        final currentToken = await _getValidToken();
+        if (currentToken != null) {
+          options.headers['Authorization'] = 'Bearer $currentToken';
+        }
+        return handler.next(options);
+      },
       onError: (error, handler) async {
         if (error.response?.statusCode == 403) {
-          // Token is invalid, try to refresh it
-          final newToken = await FirebaseMessaging.instance.getToken();
+          // Force token refresh
+          final newToken = await FirebaseMessaging.instance.getToken(vapidKey: dotenv.env['VAPID_KEY']);
           if (newToken != null) {
-            dotenv.env['FCM_TOKEN'] = newToken;
             error.requestOptions.headers['Authorization'] = 'Bearer $newToken';
-            
-            // Retry the request with new token
-            return handler.resolve(await _dio.fetch(error.requestOptions));
+            final retryResponse = await _dio.fetch(error.requestOptions);
+            return handler.resolve(retryResponse);
           }
         }
         return handler.next(error);
@@ -89,27 +88,30 @@ class PlantService {
   }
 
   Future<String?> _getValidToken() async {
-    String? token = dotenv.env['FCM_TOKEN'];
-    if (token == null || token.isEmpty) {
-      token = await FirebaseMessaging.instance.getToken();
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
         dotenv.env['FCM_TOKEN'] = token;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('fcm_token', token);
+        return token;
       }
+      return null;
+    } catch (e) {
+      dev.log('Error getting FCM token: $e');
+      return null;
     }
-    return token;
   }
 
   Future<List<Plant>> getPlants() async {
     try {
-      final token = dotenv.env['FCM_TOKEN'];
-      if (token == null || token.isEmpty) {
-        throw Exception('FCM token not available');
+      final token = await _getValidToken();
+      if (token == null) {
+        dev.log('FCM token not available');
+        return [];
       }
 
       const url = '${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/plants';
-      print('Making request to: $url');
-      print('Using token: $token');
-
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -119,27 +121,21 @@ class PlantService {
         },
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response headers: ${response.headers}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = json.decode(response.body);
         final List<dynamic> plantsJson = jsonResponse['data'] ?? [];
         return plantsJson.map((json) => Plant.fromJson(json)).toList();
-      } else {
-        // Try to parse error message if available
-        try {
-          final errorJson = json.decode(response.body);
-          print('Detailed error: ${errorJson['message'] ?? errorJson['error'] ?? response.body}');
-        } catch (e) {
-          print('Raw error body: ${response.body}');
+      } else if (response.statusCode == 403) {
+        // If token is invalid, try to get a new one and retry once
+        final newToken = await FirebaseMessaging.instance.getToken();
+        if (newToken != null) {
+          dotenv.env['FCM_TOKEN'] = newToken;
+          return getPlants(); // Retry with new token
         }
-        return [];
       }
-    } catch (e, stackTrace) {
-      print('Error fetching plants: $e');
-      print('Stack trace: $stackTrace');
+      return [];
+    } catch (e) {
+      dev.log('Error fetching plants: $e');
       return [];
     }
   }
@@ -370,6 +366,22 @@ class PlantService {
     } catch (e) {
       print('Error fetching combined plant data: $e');
       rethrow;
+    }
+  }
+
+  Future<bool> verifyToken(String token) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/verify-token'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      dev.log('Error verifying token: $e');
+      return false;
     }
   }
 }
