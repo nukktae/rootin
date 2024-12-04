@@ -14,11 +14,17 @@ class MainScreen extends StatefulWidget {
 class MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    CareScreen(),
-    ProfileScreen(),
-  ];
+  final List<Widget> _screens = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _screens.addAll([
+      HomeScreen(setCurrentIndex: setCurrentIndex),
+      CareScreen(setCurrentIndex: setCurrentIndex),
+      const ProfileScreen(),
+    ]);
+  }
 
   void _onTabTapped(int index) {
     setCurrentIndex(index);
