@@ -8,13 +8,16 @@ import '../widgets/in_progress_plants_card.dart';
 import '../widgets/done_plants_card.dart';
 import '../screens/notification_settings_screen.dart';
 import '../widgets/ai_chat_fab.dart';
+import '../l10n/app_localizations.dart';
 
 class CareScreen extends StatefulWidget {
   final Function(int) setCurrentIndex;
+  final int initialTabIndex;
 
   const CareScreen({
     super.key,
     required this.setCurrentIndex,
+    this.initialTabIndex = 0,
   });
 
   @override
@@ -29,7 +32,11 @@ class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
     _refreshPlants();
   }
 
@@ -64,13 +71,41 @@ class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateM
       ),
       body: Column(
         children: [
-          CustomTabBar(controller: _tabController),
+          CustomTabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(
+                child: Text(
+                  AppLocalizations.of(context).today,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.14,
+                  ),
+                ),
+              ),
+              Tab(
+                child: Text(
+                  AppLocalizations.of(context).upcoming,
+                  maxLines: 1,
+                  overflow: TextOverflow.visible,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.14,
+                  ),
+                ),
+              ),
+            ],
+          ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildPlantStatusList("Today"),
-                _buildPlantStatusList("Upcoming"),
+                _buildPlantStatusList(AppLocalizations.of(context).today),
+                _buildPlantStatusList(AppLocalizations.of(context).upcoming),
               ],
             ),
           ),
@@ -100,6 +135,7 @@ class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateM
             .where((plant) => 
                 plant.status != 'NO_SENSOR' && 
                 plant.status != 'UNKNOWN' &&
+                plant.status != 'MEASURING' &&
                 plant.currentMoisture < (plant.moistureRange['min'] ?? 0.0))
             .map((plant) => {
                   'plantId': plant.plantId,
@@ -111,7 +147,10 @@ class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateM
             .toList();
 
         final inProgressPlants = plants
-            .where((plant) => plant.status == 'MEASURING')
+            .where((plant) => 
+                plant.status == 'MEASURING' || 
+                plant.status == 'NO_SENSOR'
+            )
             .map((plant) => {
                   'plantId': plant.plantId,
                   'plantTypeId': plant.plantTypeId,
@@ -123,6 +162,8 @@ class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateM
 
         final donePlants = plants
             .where((plant) => 
+                plant.status != 'NO_SENSOR' && 
+                plant.status != 'MEASURING' &&
                 plant.currentMoisture >= (plant.moistureRange['min'] ?? 0.0) &&
                 plant.currentMoisture <= (plant.moistureRange['max'] ?? 100.0))
             .map((plant) => {
@@ -134,7 +175,7 @@ class _CareScreenState extends State<CareScreen> with SingleTickerProviderStateM
                 })
             .toList();
 
-        if (filter == "Today") {
+        if (filter == AppLocalizations.of(context).today) {
           return SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),

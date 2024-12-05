@@ -11,7 +11,12 @@ class StatusIcon extends StatelessWidget {
     String iconPath;
     Color backgroundColor;
 
-    switch (status.toUpperCase()) {
+    String statusToUse = status.toUpperCase();
+    if (statusToUse == "NO_SENSOR") {
+      statusToUse = "MEASURING";
+    }
+
+    switch (statusToUse) {
       case "IDEAL":
         iconPath = 'assets/icons/status_ideal.svg';
         backgroundColor = const Color(0xFF73C2FB);
@@ -32,10 +37,9 @@ class StatusIcon extends StatelessWidget {
         iconPath = 'assets/icons/status_measuring.svg';
         backgroundColor = const Color(0xFF757575);
         break;
-      case "NO_SENSOR":
       default:
-        iconPath = 'assets/icons/status_nosensor.svg';
-        backgroundColor = const Color(0xFFD9D9D9);
+        iconPath = 'assets/icons/status_measuring.svg';
+        backgroundColor = const Color(0xFF757575);
     }
 
     return Container(

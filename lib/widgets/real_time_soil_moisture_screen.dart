@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:async';
 import '../services/plant_service.dart';
 import '../screens/waterlogged_instructions_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class RealTimeSoilMoistureScreen extends StatefulWidget {
   final Map<String, dynamic> plantDetail;
@@ -231,9 +232,9 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'Soil Moisture',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).soilMoisture,
+                  style: const TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 14,
                     fontFamily: 'Inter',
@@ -251,9 +252,9 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Text(
-                  'Ideal Range (30-70%)',
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context).idealRange,
+                  style: const TextStyle(
                     color: Color(0xFF6B7280),
                     fontSize: 14,
                     fontFamily: 'Inter',
@@ -417,7 +418,8 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: StatusBanner(
             status: status,
-            onButtonPressed: handleStatusTap,
+            onButtonPressed: () => handleStatusTap(),
+            context: context,
           ),
         ),
         const SizedBox(height: 24),
@@ -434,11 +436,11 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
         ),
         const SizedBox(height: 40),
 
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'Weekly trends',
-            style: TextStyle(
+            AppLocalizations.of(context).weeklyTrends,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
             ),
@@ -453,12 +455,12 @@ class _RealTimeSoilMoistureScreenState extends State<RealTimeSoilMoistureScreen>
             : _buildLoadingState(),
         ),
 
-        const Center(
+        Center(
           child: Padding(
-            padding: EdgeInsets.only(top: 16),
+            padding: const EdgeInsets.only(top: 16),
             child: Text(
-              'Soil moisture updates every minute for real-time care!',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              AppLocalizations.of(context).soilMoistureUpdates,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ),

@@ -24,12 +24,7 @@ class SuggestionBar extends StatelessWidget {
               child: Container(
                 width: 186,
                 height: 60,
-                padding: const EdgeInsets.only(
-                  top: 10,
-                  left: 16,
-                  right: 15,
-                  bottom: 10,
-                ),
+                padding: const EdgeInsets.all(10),
                 decoration: ShapeDecoration(
                   color: Colors.white,
                   shape: RoundedRectangleBorder(

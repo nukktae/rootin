@@ -30,9 +30,24 @@ class WateringHeader extends StatelessWidget {
                     letterSpacing: -0.28,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: onSettingsPressed,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFEEEEEE),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.settings,
+                      size: 24,
+                      color: Colors.black,
+                    ),
+                    padding: EdgeInsets.zero,
+                    onPressed: onSettingsPressed,
+                  ),
                 ),
               ],
             ),

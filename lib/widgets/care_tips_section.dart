@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/plant.dart';
 import 'chatbot_banner.dart';
+import '../l10n/app_localizations.dart';
+
 
 class CareTipsSection extends StatelessWidget {
   final Plant? plant;
@@ -12,19 +14,21 @@ class CareTipsSection extends StatelessWidget {
     required this.careTips,
   });
 
-  Map<String, String> get formattedTipsMap {
+  Map<String, String> _getFormattedTipsMap(BuildContext context) {
     return {
-      'Difficulty': plant?.infoDifficulty ?? 'Unknown',
-      'Watering': plant?.infoWatering ?? 'Unknown',
-      'Light': plant?.infoLight ?? 'Unknown',
-      'Soil Type': plant?.infoSoilType ?? 'Unknown',
-      'Repotting': plant?.infoRepotting ?? 'Unknown',
-      'Toxicity': plant?.infoToxicity ?? 'Unknown',
+      AppLocalizations.of(context).difficulty: plant?.infoDifficulty ?? AppLocalizations.of(context).unknown,
+      AppLocalizations.of(context).watering: plant?.infoWatering ?? AppLocalizations.of(context).unknown,
+      AppLocalizations.of(context).light: plant?.infoLight ?? AppLocalizations.of(context).unknown,
+      AppLocalizations.of(context).soilType: plant?.infoSoilType ?? AppLocalizations.of(context).unknown,
+      AppLocalizations.of(context).repotting: plant?.infoRepotting ?? AppLocalizations.of(context).unknown,
+      AppLocalizations.of(context).toxicity: plant?.infoToxicity ?? AppLocalizations.of(context).unknown,
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final tipsMap = _getFormattedTipsMap(context);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,12 +41,18 @@ class CareTipsSection extends StatelessWidget {
               plant: plant,
             ),
           ),
-          const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+          const SizedBox(height: 28),
+          Container(
+            width: 393,
+            height: 8,
+            decoration: const BoxDecoration(color: Color(0xFFEFEFEF)),
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'Overall Tips',
-              style: TextStyle(
+              AppLocalizations.of(context).overallTips,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
@@ -61,12 +71,12 @@ class CareTipsSection extends StatelessWidget {
                 crossAxisSpacing: 16,
                 childAspectRatio: 1,
                 children: [
-                  _buildTipItem('Difficulty', formattedTipsMap['Difficulty']!),
-                  _buildTipItem('Watering', formattedTipsMap['Watering']!),
-                  _buildTipItem('Light', formattedTipsMap['Light']!),
-                  _buildTipItem('Soil Type', formattedTipsMap['Soil Type']!),
-                  _buildTipItem('Repotting', formattedTipsMap['Repotting']!),
-                  _buildTipItem('Toxicity', formattedTipsMap['Toxicity']!),
+                  _buildTipItem(AppLocalizations.of(context).difficulty, tipsMap[AppLocalizations.of(context).difficulty]!),
+                  _buildTipItem(AppLocalizations.of(context).watering, tipsMap[AppLocalizations.of(context).watering]!),
+                  _buildTipItem(AppLocalizations.of(context).light, tipsMap[AppLocalizations.of(context).light]!),
+                  _buildTipItem(AppLocalizations.of(context).soilType, tipsMap[AppLocalizations.of(context).soilType]!),
+                  _buildTipItem(AppLocalizations.of(context).repotting, tipsMap[AppLocalizations.of(context).repotting]!),
+                  _buildTipItem(AppLocalizations.of(context).toxicity, tipsMap[AppLocalizations.of(context).toxicity]!),
                 ],
               ),
             ),

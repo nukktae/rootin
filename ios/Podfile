@@ -1,12 +1,8 @@
-# Add these lines at the top
-install! 'cocoapods', :deterministic_uuids => false
-use_frameworks! :linkage => :static
-
-# Modify the platform line if it exists
+# Minimum deployment target
 platform :ios, '13.0'
 
-# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
-ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+# Add this line to resolve Xcode 15 issues
+install! 'cocoapods', :deterministic_uuids => false
 
 project 'Runner', {
   'Debug' => :debug,
@@ -24,7 +20,7 @@ def flutter_root
     matches = line.match(/FLUTTER_ROOT\=(.*)/)
     return matches[1].strip if matches
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}"
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
@@ -34,32 +30,16 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
-
+  
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  target 'RunnerTests' do
-    inherit! :search_paths
-  end
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
     
-    # Add these lines
     target.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
-      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
-        '$(inherited)',
-        'PERMISSION_BLUETOOTH=1',
-        ## Add any other permissions you need
-      ]
-      
-      # Fix for Xcode 15 framework include issue
-      config.build_settings['FRAMEWORK_SEARCH_PATHS'] = [
-        '$(inherited)',
-        '$(PODS_CONFIGURATION_BUILD_DIR)',
-        '$(PODS_ROOT)/Flutter'
-      ]
     end
   end
 end

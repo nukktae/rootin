@@ -196,7 +196,7 @@ class MockBluetoothDevice extends BluetoothDevice {
   @override
   final String name;
   
-  MockBluetoothDevice(this.name) : super(remoteId: DeviceIdentifier('mock_id'));
+  MockBluetoothDevice(this.name) : super(remoteId: const DeviceIdentifier('mock_id'));
   
   @override
   String get platformName => name;

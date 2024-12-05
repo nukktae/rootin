@@ -6,7 +6,7 @@ import '../widgets/real_time_soil_moisture_screen.dart';
 import '../widgets/care_tips_section.dart';
 import '../services/plant_service.dart';
 import '../models/plant.dart';
-import '../screens/ai_chatbot_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class PlantDetailScreen extends StatefulWidget {
   final String plantTypeId;
@@ -20,21 +20,24 @@ class PlantDetailScreen extends StatefulWidget {
   State<PlantDetailScreen> createState() => _PlantDetailScreenState();
 }
 
-class _PlantDetailScreenState extends State<PlantDetailScreen> {
+class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTickerProviderStateMixin {
   bool showCareTips = true;
   Plant? cachedPlant;
   Future<List<Plant>>? _plantsFuture;
   late PageController _pageController;
   int _currentIndex = 0;
   List<Map<String, dynamic>> historicalData = [];
+  late AnimationController _shineController;
+  late Animation<double> _shineAnimation;
 
   @override
   void initState() {
     super.initState();
+    _initShineAnimation();
     _pageController = PageController(
       viewportFraction: 0.95,
       initialPage: 0,
-    );
+    )..addListener(_handlePageChange);
     _plantsFuture = PlantService().getPlants().then((plants) {
       int initialIndex = plants.indexWhere((p) => p.plantTypeId == widget.plantTypeId);
       if (initialIndex != -1) {
@@ -50,8 +53,41 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
     loadPlantData();
   }
 
+  void _initShineAnimation() {
+    _shineController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    
+    _shineAnimation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(
+      parent: _shineController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start initial shine animation
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _shineController.forward();
+    });
+  }
+
+  void _handlePageChange() {
+    if (_pageController.page?.round() != _currentIndex) {
+      setState(() {
+        _currentIndex = _pageController.page!.round();
+      });
+      // Trigger shine animation for the new plant
+      _shineController.reset();
+      _shineController.forward();
+    }
+  }
+
   @override
   void dispose() {
+    _shineController.dispose();
+    _pageController.removeListener(_handlePageChange);
     _pageController.dispose();
     super.dispose();
   }
@@ -120,6 +156,8 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+
     return FutureBuilder<List<Plant>>(
       future: _plantsFuture,
       builder: (context, snapshot) {
@@ -182,35 +220,54 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                                     fontSize: 24,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: 393,
+                                  child: Text(
+                                    plant.plantTypeName,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Color(0xFF6F6F6F),
+                                      fontSize: 16,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.2,
+                                      letterSpacing: -0.16,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
-                                  plant.plantTypeName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xff6F6F6F),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'In ${plant.category}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Color(0xff6F6F6F),
+                                SizedBox(
+                                  width: 393,
+                                  child: Text(
+                                    'In ${plant.category.split('/')[0]}',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      color: Color(0xFF6F6F6F),
+                                      fontSize: 16,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.2,
+                                      letterSpacing: -0.16,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                Container(
-                                  width: 225,
-                                  height: 225,
-                                  decoration: ShapeDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(plant.imageUrl),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(40),
+                                _buildShineEffect(
+                                  Container(
+                                    width: 250,
+                                    height: 250,
+                                    decoration: ShapeDecoration(
+                                      image: DecorationImage(
+                                        image: NetworkImage(plant.imageUrl),
+                                        fit: BoxFit.cover,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(45),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -222,32 +279,25 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                       
                       if (_currentIndex > 0)
                         Positioned(
-                          left: 16,
-                          top: 200,
-                          child: IconButton(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                            onPressed: () {
+                          left: -120,
+                          top: 140,
+                          child: GestureDetector(
+                            onTap: () {
                               _pageController.previousPage(
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
                               );
                             },
-                            icon: Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xffE7E7E7),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SvgPicture.asset(
-                                  'assets/icons/leftarrow.svg',
-                                  width: 24,
-                                  height: 24,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.black,
-                                    BlendMode.srcIn,
-                                  ),
+                            child: Container(
+                              width: 150,
+                              height: 150,
+                              decoration: ShapeDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(plants[_currentIndex - 1].imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
                                 ),
                               ),
                             ),
@@ -256,32 +306,25 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                       
                       if (_currentIndex < plants.length - 1)
                         Positioned(
-                          right: 16,
-                          top: 200,
-                          child: IconButton(
-                            constraints: const BoxConstraints(),
-                            padding: EdgeInsets.zero,
-                            onPressed: () {
+                          right: -120,
+                          top: 140,
+                          child: GestureDetector(
+                            onTap: () {
                               _pageController.nextPage(
                                 duration: const Duration(milliseconds: 300),
                                 curve: Curves.easeInOut,
                               );
                             },
-                            icon: Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xffE7E7E7),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: SvgPicture.asset(
-                                  'assets/icons/rightarrow.svg',
-                                  width: 24,
-                                  height: 24,
-                                  colorFilter: const ColorFilter.mode(
-                                    Colors.black,
-                                    BlendMode.srcIn,
-                                  ),
+                            child: Container(
+                              width: 150,
+                              height: 150,
+                              decoration: ShapeDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(plants[_currentIndex + 1].imageUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(40),
                                 ),
                               ),
                             ),
@@ -290,6 +333,8 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                     ],
                   ),
                 ),
+
+                const SizedBox(height: 32),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -314,7 +359,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              'Care tips',
+                              appLocalizations.careTips,
                               style: TextStyle(
                                 color: showCareTips ? Colors.white : Colors.black,
                                 fontSize: 14,
@@ -344,7 +389,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                           ),
                           child: Center(
                             child: Text(
-                              'Real-time Soil Moisture',
+                              appLocalizations.realTimeSoilMoisture,
                               style: TextStyle(
                                 color: showCareTips ? Colors.black : Colors.white,
                                 fontSize: 14,
@@ -405,6 +450,50 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
           color: Colors.black,
         ),
         onPressed: onPressed,
+      ),
+    );
+  }
+
+  Widget _buildShineEffect(Widget child) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(45),
+      child: Stack(
+        children: [
+          child,
+          AnimatedBuilder(
+            animation: _shineAnimation,
+            builder: (context, child) {
+              return Positioned.fill(
+                child: Transform.rotate(
+                  angle: -0.8,
+                  child: Transform.translate(
+                    offset: Offset(
+                      _shineAnimation.value * 300,
+                      0,
+                    ),
+                    child: Container(
+                      width: 50,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.white.withOpacity(0),
+                            Colors.white.withOpacity(0.3),
+                            Colors.white.withOpacity(0.6),
+                            Colors.white.withOpacity(0.3),
+                            Colors.white.withOpacity(0),
+                          ],
+                          stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
-import 'dart:convert';
+import 'dart:math';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -53,15 +53,12 @@ class NotificationService {
   }
 
   Future<void> showNotification(RemoteMessage message) async {
-    print('========= Detailed FCM Notification Debug =========');
-    print('Message data: ${message.data}');
-
     try {
       final tempDir = await getTemporaryDirectory();
       final imagePath = '${tempDir.path}/notification_image.png';
       
       // Copy the asset to temporary directory
-      final data = await rootBundle.load('assets/images/rootin_1x.png');
+      final data = await rootBundle.load('assets/images/notilogo.png');
       final bytes = data.buffer.asUint8List();
       await File(imagePath).writeAsBytes(bytes);
 
@@ -79,14 +76,19 @@ class NotificationService {
 
       final details = NotificationDetails(iOS: iosDetails);
 
+      // Use a random number between 0-10000 for notification ID
+      final random = Random();
+      final notificationId = random.nextInt(10000);
+
       await _localNotifications.show(
-        message.hashCode,
+        notificationId,
         message.notification?.title ?? 'New Message',
         message.notification?.body ?? '',
         details,
       );
     } catch (e) {
       print('Error in showNotification: $e');
+      print('Stack trace: ${StackTrace.current}');
     }
   }
 
@@ -141,21 +143,53 @@ class NotificationService {
     try {
       print('Testing local image notification...');
       
-      // Create a test message
-      final testMessage = RemoteMessage(
-        messageId: 'test_${DateTime.now().millisecondsSinceEpoch}',
-        notification: const RemoteNotification(
-          title: 'Test Local Image',
-          body: 'This is a test notification with a local image',
-        ),
+      // Get the app's documents directory
+      final directory = await getApplicationDocumentsDirectory();
+      final imagePath = '${directory.path}/rootinnotif.png';
+      
+      print('Image path for notification: $imagePath');
+      
+      // Copy the asset to documents directory
+      final data = await rootBundle.load('assets/images/rootinnotif.png');
+      print('Asset loaded successfully');
+      
+      final bytes = data.buffer.asUint8List();
+      final file = File(imagePath);
+      await file.writeAsBytes(bytes);
+      print('Image written to documents directory: ${file.path}');
+
+      // Verify file exists
+      if (!await file.exists()) {
+        throw Exception('Image file not found at path: $imagePath');
+      }
+
+      final DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        attachments: [
+          DarwinNotificationAttachment(
+            file.path,
+            identifier: 'notification_icon'
+          )
+        ],
+        threadIdentifier: 'custom_notification_thread'
       );
 
-      // Show notification with local image
-      await showNotification(testMessage);
-      print('Test notification sent successfully');
+      final details = NotificationDetails(iOS: iosDetails);
+
+      // Use a simple integer for notification ID
+      await _localNotifications.show(
+        1, // Simple integer ID instead of milliseconds
+        'Custom Icon Test',
+        'This notification should show the custom rootin icon',
+        details,
+      );
       
+      print('Test notification sent successfully with image path: ${file.path}');
     } catch (e) {
-      print('Error sending test notification: $e');
+      print('Error in test notification: $e');
+      print('Stack trace: ${StackTrace.current}');
     }
   }
 }

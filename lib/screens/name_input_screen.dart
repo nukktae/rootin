@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'site_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../l10n/app_localizations.dart';
 
 class NameInputScreen extends StatefulWidget {
   final String plantId;
@@ -125,10 +126,10 @@ class _NameInputScreenState extends State<NameInputScreen> {
                   const SizedBox(height: 48),
 
                   // Text sections
-                  const Text(
-                    'Name your plant!',
+                  Text(
+                    AppLocalizations.of(context).nameYourPlant,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.black,
                       fontSize: 22,
                       fontFamily: 'Inter',
@@ -137,10 +138,10 @@ class _NameInputScreenState extends State<NameInputScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Name within 20 characters',
+                  Text(
+                    AppLocalizations.of(context).nameWithinCharacters,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF6F6F6F),
                       fontSize: 14,
                       fontFamily: 'Inter',
@@ -173,16 +174,16 @@ class _NameInputScreenState extends State<NameInputScreen> {
                             fontWeight: FontWeight.w500,
                             letterSpacing: -0.16,
                           ),
-                          decoration: const InputDecoration(
-                            hintText: 'Plant Nickname',
-                            hintStyle: TextStyle(
+                          decoration: InputDecoration(
+                            hintText: AppLocalizations.of(context).plantNickname,
+                            hintStyle: const TextStyle(
                               color: Color(0xFF5E5E5E),
                               fontSize: 16,
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w500,
                               letterSpacing: -0.16,
                             ),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                             counterText: '',
                             border: InputBorder.none,
                             enabledBorder: InputBorder.none,
@@ -228,9 +229,9 @@ class _NameInputScreenState extends State<NameInputScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Continue',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).continueText,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),

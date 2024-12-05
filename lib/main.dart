@@ -8,6 +8,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io' show Platform;
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import 'providers/language_provider.dart';
+import 'themes/app_theme.dart';
 
 import 'screens/main_screen.dart';
 import 'firebase_options.dart';
@@ -29,7 +34,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 Future<void> _setupForegroundNotification() async {
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('========= Foreground Message Debug =========');
-    print('Got a message whilst in the foreground!');
     print('Message data: ${message.data}');
     print('Raw message: ${message.toMap()}');
     
@@ -46,8 +50,6 @@ Future<void> _setupForegroundNotification() async {
       }
     }
     print('=========================================');
-
-    NotificationService().showNotification(message);
   });
 }
 
@@ -66,8 +68,6 @@ void main() async {
   developer.log('Firebase initialized');
 
   // Initialize notifications
-  await _requestNotificationPermissions();
-  await _initializeLocalNotifications();
   final notificationService = NotificationService();
   await notificationService.initialize();
   print('Notification service initialized');
@@ -97,9 +97,40 @@ void main() async {
 
   // Get FCM token
   final token = await FirebaseMessaging.instance.getToken();
+  print('=================== FCM TOKEN ===================');
+  print(token);
+  print('===============================================');
   developer.log('FCM Token: $token');
 
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => LanguageProvider(),
+      child: Consumer<LanguageProvider>(
+        builder: (context, languageProvider, child) {
+          return MaterialApp(
+            title: 'Rootin',
+            localizationsDelegates: const [
+              AppLocalizationsDelegate(),
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''), // English
+              Locale('ko', ''), // Korean
+            ],
+            // Set initial locale (optional)
+            locale: languageProvider.currentLocale,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: AppTheme.primaryColor),
+              useMaterial3: true,
+            ),
+            home: const MainScreen(),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 Future<void> _requestNotificationPermissions() async {
@@ -290,9 +321,21 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Rootin App',
+      title: 'Rootin',
+      localizationsDelegates: const [
+        AppLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''), // English
+        Locale('ko', ''), // Korean
+      ],
+      // Set initial locale (optional)
+      locale: const Locale('ko', ''), // Force Korean
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppTheme.primaryColor),
         useMaterial3: true,
       ),
       home: const MainScreen(),

@@ -1,6 +1,6 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../l10n/app_localizations.dart';
 import 'name_input_screen.dart';
 
 class AddPlantDetailScreen extends StatefulWidget {
@@ -18,8 +18,6 @@ class AddPlantDetailScreen extends StatefulWidget {
 class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
   @override
   Widget build(BuildContext context) {
-    log('Current id in AddPlantDetailScreen: ${widget.plant['id']}'); // Replaced print with log
-
     return Scaffold(
       backgroundColor: const Color(0xffF5F5F5),
       body: SafeArea(
@@ -32,7 +30,6 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-
                   // Back Button
                   Container(
                     decoration: const BoxDecoration(
@@ -49,16 +46,12 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
-
                   const SizedBox(height: 32),
-
                   // Content Section
                   Expanded(
                     child: Column(
                       children: [
                         const Spacer(flex: 2),
-                        
-                        // Plant Names Section
                         Text(
                           widget.plant['name'],
                           style: const TextStyle(
@@ -82,8 +75,6 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 32),
-                        
-                        // Plant Image - Centered
                         Center(
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
@@ -95,13 +86,10 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                             ),
                           ),
                         ),
-                        
                         const Spacer(flex: 3),
                       ],
                     ),
                   ),
-
-                  // Buttons Section
                   Column(
                     children: [
                       ElevatedButton(
@@ -126,9 +114,9 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Add Plant',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).addPlant,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -137,9 +125,9 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'Search again',
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).searchAgain,
+                          style: const TextStyle(
                             color: Color(0xff6F6F6F),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
