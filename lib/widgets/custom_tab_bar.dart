@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 
 class CustomTabBar extends StatelessWidget {
   final TabController controller;
+  final List<Widget> tabs;
 
-  const CustomTabBar({super.key, required this.controller});
+  const CustomTabBar({
+    super.key, 
+    required this.controller,
+    required this.tabs,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,32 +36,7 @@ class CustomTabBar extends StatelessWidget {
               ],
             ),
             labelPadding: const EdgeInsets.symmetric(horizontal: 32),
-            tabs: const [
-              Tab(
-                child: Text(
-                  'Today',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.14,
-                  ),
-                ),
-              ),
-              Tab(
-                child: Text(
-                  'Upcoming',
-                  maxLines: 1,
-                  overflow: TextOverflow.visible,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.14,
-                  ),
-                ),
-              ),
-            ],
+            tabs: tabs,
             labelColor: Colors.black,
             unselectedLabelColor: const Color(0xFF757575),
             dividerColor: Colors.transparent,

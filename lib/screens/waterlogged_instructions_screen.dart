@@ -1,11 +1,45 @@
 import 'package:flutter/material.dart';
 import '../widgets/chatbot_banner.dart';
+import '../l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
 
 class WaterloggedInstructionsScreen extends StatelessWidget {
   const WaterloggedInstructionsScreen({super.key});
 
+  Widget _buildLanguageSwitcher() {
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        return GestureDetector(
+          onTap: () {
+            final newLocale = languageProvider.currentLocale.languageCode == 'en' 
+              ? const Locale('ko') 
+              : const Locale('en');
+            languageProvider.changeLanguage(newLocale);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xffE7E7E7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              languageProvider.currentLocale.languageCode.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -13,31 +47,37 @@ class WaterloggedInstructionsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Back button section
-              Container(
+              // Back button and language switcher
+              Padding(
                 padding: const EdgeInsets.all(20),
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFEEEEEE),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: ShapeDecoration(
+                          color: const Color(0xFFEEEEEE),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                        ),
+                        child: const Icon(Icons.arrow_back, color: Colors.black),
                       ),
                     ),
-                    child: const Icon(Icons.arrow_back, color: Colors.black),
-                  ),
+                    _buildLanguageSwitcher(),
+                  ],
                 ),
               ),
               
               // Title
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Water-Logged',
-                  style: TextStyle(
+                  localizations.waterLogged,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 20,
                     fontFamily: 'Inter',
@@ -48,11 +88,11 @@ class WaterloggedInstructionsScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Description
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'There can be various causes of water-logging. Follow the instructions below and maintain your healthy plant care!',
-                  style: TextStyle(
+                  localizations.waterLoggedDesc,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 14,
                     fontFamily: 'Inter',
@@ -64,11 +104,11 @@ class WaterloggedInstructionsScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               // Instructions title
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Instructions',
-                  style: TextStyle(
+                  localizations.instructions,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 18,
                     fontFamily: 'Inter',
@@ -83,14 +123,14 @@ class WaterloggedInstructionsScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    _buildInstructionItem(1, 'Check the pot\'s drainage hole', 
-                      'Ensure the drainage holes aren\'t blocked and water can flow freely.'),
-                    _buildInstructionItem(2, 'Empty the drip tray',
-                      'Remove any standing water from the drip tray to prevent reabsorption.'),
-                    _buildInstructionItem(3, 'Try repotting',
-                      'If issues persist, consider repotting with fresh, well-draining soil.'),
-                    _buildInstructionItem(4, 'Check sensor',
-                      'Ensure the sensor is properly placed and functioning correctly.',
+                    _buildInstructionItem(context, 1, localizations.checkDrainageHole, 
+                      localizations.drainageHoleDesc),
+                    _buildInstructionItem(context, 2, localizations.emptyDripTray,
+                      localizations.dripTrayDesc),
+                    _buildInstructionItem(context, 3, localizations.tryRepotting,
+                      localizations.repottingDesc),
+                    _buildInstructionItem(context, 4, localizations.checkSensor,
+                      localizations.sensorDesc,
                       isWarning: true),
                   ],
                 ),
@@ -98,11 +138,11 @@ class WaterloggedInstructionsScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               // AI chat suggestion text
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  "If you can't find the exact reason, chat with our AI diagnosing and figure out the problems.",
-                  style: TextStyle(
+                  localizations.cantFindReason,
+                  style: const TextStyle(
                     color: Color(0xFF757575),
                     fontSize: 12,
                     fontFamily: 'Inter',
@@ -126,7 +166,7 @@ class WaterloggedInstructionsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInstructionItem(int number, String title, String description, {bool isWarning = false}) {
+  Widget _buildInstructionItem(BuildContext context, int number, String title, String description, {bool isWarning = false}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(

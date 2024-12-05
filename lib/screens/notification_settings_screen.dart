@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../l10n/app_localizations.dart';
+import '../services/notification_service.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -15,6 +17,8 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   bool idealReminder = true;
   bool overwaterReminder = true;
   bool waterloggedReminder = true;
+
+  final NotificationService _notificationService = NotificationService();
 
   Widget _buildReminderItem({
     required String title,
@@ -106,11 +110,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               ),
             ),
             const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Settings',
-                style: TextStyle(
+                AppLocalizations.of(context).settings,
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 28,
                   fontFamily: 'Inter',
@@ -120,11 +124,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               ),
             ),
             const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Notifications',
-                style: TextStyle(
+                AppLocalizations.of(context).notifications,
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 16,
                   fontFamily: 'Inter',
@@ -166,9 +170,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Send me Notifications',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).sendMeNotifications,
+                          style: const TextStyle(
                             color: Color(0xFF757575),
                             fontSize: 14,
                             fontFamily: 'Inter',
@@ -199,11 +203,11 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               ),
             ),
             const SizedBox(height: 24),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Text(
-                'Watering Reminders',
-                style: TextStyle(
+                AppLocalizations.of(context).wateringReminders,
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 16,
                   fontFamily: 'Inter',
@@ -219,73 +223,63 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                 child: ListView(
                   children: [
                     _buildReminderItem(
-                      title: 'Underwater Reminder',
+                      title: AppLocalizations.of(context).underwaterReminder,
                       iconColor: const Color(0xFFD3B400),
                       iconPath: 'assets/icons/status_underwater.svg',
                       value: underwaterReminder && sendNotifications,
-                      onChanged: sendNotifications 
-                        ? (value) {
-                            setState(() {
-                              underwaterReminder = value;
-                            });
-                          }
-                        : null,
+                      onChanged: sendNotifications ? (value) {
+                        setState(() {
+                          underwaterReminder = value;
+                        });
+                      } : null,
                     ),
                     const SizedBox(height: 16),
                     _buildReminderItem(
-                      title: 'Measuring Reminder',
+                      title: AppLocalizations.of(context).measuringReminder,
                       iconColor: const Color(0xFF757575),
                       iconPath: 'assets/icons/status_measuring.svg',
                       value: measuringReminder && sendNotifications,
-                      onChanged: sendNotifications 
-                        ? (value) {
-                            setState(() {
-                              measuringReminder = value;
-                            });
-                          }
-                        : null,
+                      onChanged: sendNotifications ? (value) {
+                        setState(() {
+                          measuringReminder = value;
+                        });
+                      } : null,
                     ),
                     const SizedBox(height: 16),
                     _buildReminderItem(
-                      title: 'Ideal Reminder',
+                      title: AppLocalizations.of(context).idealReminder,
                       iconColor: const Color(0xFF73C2FB),
                       iconPath: 'assets/icons/status_ideal.svg',
                       value: idealReminder && sendNotifications,
-                      onChanged: sendNotifications 
-                        ? (value) {
-                            setState(() {
-                              idealReminder = value;
-                            });
-                          }
-                        : null,
+                      onChanged: sendNotifications ? (value) {
+                        setState(() {
+                          idealReminder = value;
+                        });
+                      } : null,
                     ),
                     const SizedBox(height: 16),
                     _buildReminderItem(
-                      title: 'Overwater Reminder',
+                      title: AppLocalizations.of(context).overwaterReminder,
                       iconColor: const Color(0xFF24494E),
                       iconPath: 'assets/icons/status_overwater.svg',
                       value: overwaterReminder && sendNotifications,
-                      onChanged: sendNotifications 
-                        ? (value) {
-                            setState(() {
-                              overwaterReminder = value;
-                            });
-                          }
-                        : null,
+                      onChanged: sendNotifications ? (value) {
+                        setState(() {
+                          overwaterReminder = value;
+                        });
+                      } : null,
                     ),
                     const SizedBox(height: 16),
                     _buildReminderItem(
-                      title: 'Water-logged Reminder',
+                      title: AppLocalizations.of(context).waterloggedReminder,
                       iconColor: Colors.black,
                       iconPath: 'assets/icons/status_waterlogged.svg',
                       value: waterloggedReminder && sendNotifications,
-                      onChanged: sendNotifications 
-                        ? (value) {
-                            setState(() {
-                              waterloggedReminder = value;
-                            });
-                          }
-                        : null,
+                      onChanged: sendNotifications ? (value) {
+                        setState(() {
+                          waterloggedReminder = value;
+                        });
+                      } : null,
                     ),
                   ],
                 ),

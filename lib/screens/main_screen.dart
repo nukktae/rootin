@@ -5,20 +5,26 @@ import 'profile_screen.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int initialIndex;
+
+  const MainScreen({
+    super.key,
+    this.initialIndex = 0,  // Default to home tab
+  });
 
   @override
   MainScreenState createState() => MainScreenState();
 }
 
 class MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   final List<Widget> _screens = [];
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex;
     _screens.addAll([
       HomeScreen(setCurrentIndex: setCurrentIndex),
       CareScreen(setCurrentIndex: setCurrentIndex),

@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import '../constants/api_constants.dart';
 import './bluetooth_search_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ConfirmPlantScreen extends StatefulWidget {
   final String id;
@@ -66,20 +67,16 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
           final Map<String, dynamic> data = json.decode(getResponse.body);
           final List<dynamic> plants = data['data'] as List;
           
-          // Find the most recently created plant with matching plantTypeId
-          final recentPlant = plants.firstWhere(
-            (plant) => plant['plantTypeId'] == widget.id,
-            orElse: () => null,
+          // Find the most recently created plant (it should be the last one)
+          final recentPlant = plants.lastWhere(
+            (plant) => plant['plantTypeId'].toString() == widget.id,
+            orElse: () => throw Exception('Could not find newly created plant'),
           );
-
-          if (recentPlant == null) {
-            throw Exception('Could not find newly created plant');
-          }
 
           final plantId = recentPlant['plantId'];
           debugPrint('Found plant ID: $plantId');
 
-          // 2. Then update the nickname using PUT endpoint
+          // Update the nickname
           final updateUrl = '${ApiConstants.baseUrl}/v1/plants/$plantId';
           debugPrint('Updating plant with nickname: ${widget.plantName}');
           
@@ -175,9 +172,9 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
               const SizedBox(height: 40),
 
               // Title
-              const Text(
-                'Ready to add the plant?',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).readyToAddPlant,
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 22,
                   fontFamily: 'Inter',
@@ -190,9 +187,9 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
               const SizedBox(height: 8),
 
               // Subtitle
-              const Text(
-                'Feel free to skip for now—you can easily add later in the plant\'s detail settings.',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).skipForNow,
+                style: const TextStyle(
                   color: Color(0xFF6F6F6F),
                   fontSize: 14,
                   fontFamily: 'Inter',
@@ -244,7 +241,7 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'In ${widget.roomName}',
+                        AppLocalizations.of(context).inRoom(widget.roomName),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Color(0xFF6F6F6F),
@@ -276,9 +273,9 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          "Add Plant",
-                          style: TextStyle(
+                        child: Text(
+                          AppLocalizations.of(context).addPlant,
+                          style: const TextStyle(
                             fontFamily: "Inter",
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -290,9 +287,9 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
                     const SizedBox(height: 4),
                     TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context).cancel,
+                        style: const TextStyle(
                           fontFamily: "Inter",
                           fontSize: 16,
                           fontWeight: FontWeight.w600,

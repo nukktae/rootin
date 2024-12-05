@@ -7,10 +7,13 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import '../models/plant.dart';
 import '../widgets/plant_ai_title_bar.dart';
 import '../widgets/input_bar.dart';
 import '../widgets/suggestion_bar.dart'; // Import the SuggestionBar widget.
+import '../l10n/app_localizations.dart';
+import '../providers/language_provider.dart';
 
 class AIChatbotScreen extends StatefulWidget {
   final Plant? plant;
@@ -21,20 +24,62 @@ class AIChatbotScreen extends StatefulWidget {
   });
 
   @override
-  _AIChatbotScreenState createState() => _AIChatbotScreenState();
+  State<AIChatbotScreen> createState() => AIChatbotScreenState();
 }
 
-class _AIChatbotScreenState extends State<AIChatbotScreen> {
+class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProviderStateMixin {
   String sessionId = "";
   final List<Map<String, dynamic>> chatMessages = [];
   final TextEditingController _questionController = TextEditingController();
   bool isLoading = false;
   File? selectedImage;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _floatAnimation;
+  late Animation<double> _opacityAnimation;
 
   @override
   void initState() {
     super.initState();
+    _initAnimation();
     _initializeSession();
+  }
+
+  void _initAnimation() {
+    _animationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.98,
+      end: 1.02,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _floatAnimation = Tween<double>(
+      begin: -8.0,
+      end: 8.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _initializeSession() async {
@@ -113,6 +158,7 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         "message": question,
         "image": selectedImage,
       });
+      selectedImage = null;
     });
 
     try {
@@ -140,7 +186,6 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
     } finally {
       setState(() {
         isLoading = false;
-        selectedImage = null;
       });
     }
   }
@@ -163,6 +208,47 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         selectedImage = File(image.path);
       });
     }
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Center(
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, _floatAnimation.value),
+            child: Transform.scale(
+              scale: _scaleAnimation.value,
+              child: Opacity(
+                opacity: _opacityAnimation.value,
+                child: Image.asset(
+                  'assets/icons/loading_logo.png',
+                  width: 50,
+                  height: 50,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<String> _getSuggestions() {
+    final localizations = AppLocalizations.of(context);
+    
+    if (widget.plant != null) {
+      return [
+        "${localizations.careInstructions} ${widget.plant!.plantTypeName}?",
+        "${localizations.wateringSchedule} ${widget.plant!.plantTypeName}?",
+        "${localizations.commonProblems} ${widget.plant!.plantTypeName}",
+      ];
+    }
+    return [
+      localizations.askAboutWatering,
+      localizations.properWatering,
+      localizations.wateringFrequency,
+    ];
   }
 
   @override
@@ -208,71 +294,103 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
       body: Column(
         children: [
           Expanded(
-            child: chatMessages.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Center(
-                            child: Image.asset(
-                              'assets/icons/loading_logo.png',
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: chatMessages.length,
-                    itemBuilder: (context, index) {
-                      final message = chatMessages[index];
-                      final isUser = message['sender'] == 'user';
-                      final isAI = message['sender'] == 'ai';
-
-                      return Container(
-                        margin: EdgeInsets.zero,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                        color: const Color(0xFFF6F6F6),
+            child: Stack(
+              children: [
+                // Chat messages
+                chatMessages.isEmpty
+                    ? Center(
                         child: Column(
-                          crossAxisAlignment:
-                              isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (message['image'] != null)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Image.file(
-                                  message['image'],
-                                  height: 150,
-                                  width: 150,
-                                  fit: BoxFit.cover,
-                                ),
+                            Expanded(
+                              child: Center(
+                                child: _buildLoadingIndicator(),
                               ),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: isUser ? Colors.blue : Colors.grey[200],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: isAI
-                                  ? MarkdownBody(data: message['message'] ?? '')
-                                  : Text(
-                                      message['message'] ?? '',
-                                      style: TextStyle(
-                                        color: isUser ? Colors.white : Colors.black,
-                                      ),
-                                    ),
                             ),
                           ],
                         ),
-                      );
-                    },
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount: chatMessages.length,
+                        itemBuilder: (context, index) {
+                          final message = chatMessages[index];
+                          final isUser = message['sender'] == 'user';
+                          final isAI = message['sender'] == 'ai';
+
+                          return Container(
+                            margin: EdgeInsets.zero,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                            color: const Color(0xFFF6F6F6),
+                            child: Column(
+                              crossAxisAlignment:
+                                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                              children: [
+                                if (message['image'] != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                      child: Image.file(
+                                        message['image'],
+                                        height: 200,
+                                        width: 200,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                Row(
+                                  mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (!isUser && isAI)
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8),
+                                        child: SizedBox(
+                                          height: 40,
+                                          width: 40,
+                                          child: Image.asset(
+                                            'assets/images/rootinnotif.png',
+                                            height: 60,
+                                            width: 60,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                      ),
+                                    Flexible(
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: isUser ? Colors.blue : Colors.grey[200],
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: isAI
+                                          ? MarkdownBody(data: message['message'] ?? '')
+                                          : Text(
+                                              message['message'] ?? '',
+                                              style: TextStyle(
+                                                color: isUser ? Colors.white : Colors.black,
+                                              ),
+                                            ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                
+                // Loading overlay
+                if (isLoading)
+                  Container(
+                    color: Colors.white.withOpacity(0.7),
+                    child: _buildLoadingIndicator(),
                   ),
+              ],
+            ),
           ),
           if (selectedImage != null)
             Container(
@@ -315,20 +433,5 @@ class _AIChatbotScreenState extends State<AIChatbotScreen> {
         ],
       ),
     );
-  }
-
-  List<String> _getSuggestions() {
-    if (widget.plant != null) {
-      return [
-        "How to care for ${widget.plant!.plantTypeName}?",
-        "What's the ideal watering schedule for ${widget.plant!.plantTypeName}?",
-        "Common problems with ${widget.plant!.plantTypeName}",
-      ];
-    }
-    return [
-      "How to solve water-logged problems",
-      "Proper watering techniques",
-      "Frequency of watering",
-    ];
   }
 }

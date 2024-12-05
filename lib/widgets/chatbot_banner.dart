@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/plant.dart';
 import '../screens/ai_chatbot_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ChatbotBanner extends StatelessWidget {
   final Plant? plant;
@@ -12,6 +13,8 @@ class ChatbotBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = AppLocalizations.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -35,7 +38,10 @@ class ChatbotBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Need help with your ${plant?.plantTypeName ?? 'plant'}?',
+                    appLocalizations.needHelpWith.replaceAll(
+                      '{plantName}', 
+                      plant?.nickname ?? plant?.plantTypeName ?? appLocalizations.plant
+                    ),
                     style: const TextStyle(
                       color: Colors.black,
                       fontSize: 16,
@@ -46,9 +52,9 @@ class ChatbotBanner extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Ask our Chatbot and resolve your curiosities.',
-                    style: TextStyle(
+                  Text(
+                    appLocalizations.askChatbot,
+                    style: const TextStyle(
                       color: Color(0xFF6F6F6F),
                       fontSize: 14,
                       fontFamily: 'Inter',
@@ -86,9 +92,9 @@ class ChatbotBanner extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Text(
-                  'Go to Chatbot',
-                  style: TextStyle(
+                child: Text(
+                  appLocalizations.goToChatbot,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
                     fontFamily: 'Inter',

@@ -101,10 +101,15 @@ class _WifiNetworkListModalState extends State<WifiNetworkListModal> {
                         networkStatus = 'Connecting...';
                       });
                       
-                      await Future.delayed(const Duration(seconds: 2));
+                      await Future.delayed(const Duration(seconds: 5));
                       
                       setState(() {
                         networkStatus = 'Connected';
+                      });
+                      
+                      await Future.delayed(const Duration(seconds: 1));
+                      setState(() {
+                        networkStatus = 'Navigating to final step...';
                       });
                       
                       await Future.delayed(const Duration(seconds: 1));
@@ -195,12 +200,12 @@ class _WifiNetworkListModalState extends State<WifiNetworkListModal> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: Row(
+                    trailing: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.lock, size: 20),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.wifi, size: 20),
+                        Icon(Icons.lock, size: 20),
+                        SizedBox(width: 8),
+                        Icon(Icons.wifi, size: 20),
                       ],
                     ),
                     onTap: () => _showPasswordDialog(networks[index]),

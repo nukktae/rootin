@@ -17,6 +17,7 @@ import '../widgets/ai_chat_fab.dart';
 import '../services/plant_service.dart';
 import '../services/notification_service.dart';
 import '../widgets/filter_bottom_sheet.dart';
+import '../l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int) setCurrentIndex;
@@ -124,8 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
       developer.log('=========================================');
-
-      NotificationService().showNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
@@ -274,8 +273,9 @@ class _HomeScreenState extends State<HomeScreen> {
       // Status filter
       if (selectedStatus != 'All Status') {
         String plantStatus = '';
-        if (plant.status == 'HEALTHY') plantStatus = 'Ideal';
-        else if (plant.status == 'UNDERWATER') plantStatus = 'Underwatered';
+        if (plant.status == 'HEALTHY') {
+          plantStatus = 'Ideal';
+        } else if (plant.status == 'UNDERWATER') plantStatus = 'Underwatered';
         else if (plant.status == 'OVERWATER') plantStatus = 'Overwatered';
         else if (plant.status == 'WATERLOGGED') plantStatus = 'Water-logged';
         
@@ -351,9 +351,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 16),
-                      const Text(
-                        "Today's watering",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).todaysWatering,
+                        style: const TextStyle(
                           color: Colors.black,
                           fontSize: 22,
                           fontFamily: 'Inter',
@@ -371,10 +371,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'My plants',
-                              style: TextStyle(
+                              AppLocalizations.of(context).myPlants,
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 22,
                                 fontFamily: 'Inter',
@@ -408,7 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         offset: const Offset(0, -30),
                         child: PlantGridView(
                           plants: getFilteredPlants(),
-                          emptyMessage: "Try to add a plant!",
+                          emptyMessage: AppLocalizations.of(context).tryToAddPlant,
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -420,10 +420,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: Column(
+      floatingActionButton: const Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          const AIChatFAB(),
+          AIChatFAB(),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

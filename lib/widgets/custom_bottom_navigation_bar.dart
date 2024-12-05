@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 class CustomBottomNavigationBar extends StatefulWidget {
   final int currentIndex;
@@ -32,6 +33,7 @@ class _CustomBottomNavigationBarState extends State<CustomBottomNavigationBar> {
       child: BottomNavigationBar(
         currentIndex: widget.currentIndex,
         onTap: (index) {
+          HapticFeedback.lightImpact();
           print('Navigation tapped: $index');
           widget.onTap(index);
         },

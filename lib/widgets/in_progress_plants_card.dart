@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../screens/plant_detail_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class InProgressPlantsCard extends StatelessWidget {
   final List<Map<String, dynamic>> plants;
@@ -17,11 +18,11 @@ class InProgressPlantsCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(
+        SizedBox(
           width: 353,
           child: Text(
-            'In progress',
-            style: TextStyle(
+            AppLocalizations.of(context).inProgress,
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 22,
               fontFamily: 'Inter',
@@ -70,9 +71,9 @@ class InProgressPlantsCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                         const SizedBox(width: 4),
-                        const Text(
-                          'Measuring',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).measuring,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
                             fontFamily: 'Inter',
@@ -84,7 +85,7 @@ class InProgressPlantsCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 13.5, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: ShapeDecoration(
                       color: const Color(0x33757575),
                       shape: RoundedRectangleBorder(
@@ -154,7 +155,7 @@ class InProgressPlantsCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    entry.value['location'] ?? 'Location',
+                                    '${AppLocalizations.of(context).in_} ${entry.value['location'].toString().split('/').last}',
                                     style: const TextStyle(
                                       color: Color(0xFF6F6F6F),
                                       fontSize: 12,

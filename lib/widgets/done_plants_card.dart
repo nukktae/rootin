@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../screens/plant_detail_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class DonePlantsCard extends StatelessWidget {
   final List<Map<String, dynamic>> plants;
@@ -17,9 +18,9 @@ class DonePlantsCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Done',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context).done,
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 22,
             fontFamily: 'Inter',
@@ -28,9 +29,9 @@ class DonePlantsCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Moves to history in 24 hours.',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context).movesToHistory,
+          style: const TextStyle(
             color: Color(0xFF757575),
             fontSize: 12,
             fontFamily: 'Inter',
@@ -73,9 +74,9 @@ class DonePlantsCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                         const SizedBox(width: 4),
-                        const Text(
-                          'Ideal',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).ideal,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
                             fontFamily: 'Inter',
@@ -87,7 +88,7 @@ class DonePlantsCard extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    width: 34,
+                    width: 40,
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     decoration: ShapeDecoration(
                       color: const Color(0x3373C2FB),
@@ -159,7 +160,7 @@ class DonePlantsCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    entry.value['location'] ?? 'Location',
+                                    '${AppLocalizations.of(context).in_} ${entry.value['location'].toString().split('/').last}',
                                     style: const TextStyle(
                                       color: Color(0xFF6F6F6F),
                                       fontSize: 12,

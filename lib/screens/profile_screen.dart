@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 import '../screens/app_guide_screen.dart';
+import '../screens/notification_settings_screen.dart';
+import '../providers/language_provider.dart';
+import '../l10n/app_localizations.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -34,6 +38,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final isKorean = languageProvider.currentLocale.languageCode == 'ko';
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -59,7 +66,7 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _buildQuickAccessButton(
-                        title: 'App Guide',
+                        title: AppLocalizations.of(context).appGuide,
                         iconPath: 'assets/icons/guide_icon.svg',
                         onTap: () {
                           Navigator.push(
@@ -74,7 +81,7 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(width: 17),
                     Expanded(
                       child: _buildQuickAccessButton(
-                        title: 'Shop Sensor',
+                        title: AppLocalizations.of(context).shopSensor,
                         iconPath: 'assets/icons/shop_icon.svg',
                         onTap: () => _launchRootinWebsite(context),
                       ),
@@ -88,25 +95,90 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _buildMenuItem(
-                  title: 'Sensor Settings',
+                  title: AppLocalizations.of(context).sensorSettings,
                   icon: SvgPicture.asset('assets/icons/sensor_icon.svg'),
                   onTap: () {},
                 ),
                 _buildMenuItem(
-                  title: 'Notifications',
+                  title: AppLocalizations.of(context).notifications,
                   icon: SvgPicture.asset('assets/icons/notification_icon.svg'),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationSettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  title: AppLocalizations.of(context).language,
+                  icon: const Icon(
+                    Icons.language,
+                    size: 24,
+                    color: Colors.black,
+                  ),
+                  trailing: Text(
+                    isKorean ? '한국어' : 'English',
+                    style: const TextStyle(
+                      color: Colors.black54,
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text(AppLocalizations.of(context).selectLanguage),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                title: const Text('한국어'),
+                                leading: Radio<String>(
+                                  value: 'ko',
+                                  groupValue: languageProvider.currentLocale.languageCode,
+                                  onChanged: (String? value) {
+                                    if (value != null) {
+                                      languageProvider.changeLanguage(Locale(value));
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                ),
+                              ),
+                              ListTile(
+                                title: const Text('English'),
+                                leading: Radio<String>(
+                                  value: 'en',
+                                  groupValue: languageProvider.currentLocale.languageCode,
+                                  onChanged: (String? value) {
+                                    if (value != null) {
+                                      languageProvider.changeLanguage(Locale(value));
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+                _buildMenuItem(
+                  title: AppLocalizations.of(context).help,
                   onTap: () {},
                 ),
                 _buildMenuItem(
-                  title: 'Help',
+                  title: AppLocalizations.of(context).privacyPolicy,
                   onTap: () {},
                 ),
                 _buildMenuItem(
-                  title: 'Privacy Policy',
-                  onTap: () {},
-                ),
-                _buildMenuItem(
-                  title: 'Terms of Service',
+                  title: AppLocalizations.of(context).termsOfService,
                   onTap: () {},
                 ),
                 const SizedBox(height: 40),
@@ -185,6 +257,7 @@ class ProfileScreen extends StatelessWidget {
     required String title,
     required VoidCallback onTap,
     Widget? icon,
+    Widget? trailing,
   }) {
     return Container(
       height: 47,
@@ -196,13 +269,16 @@ class ProfileScreen extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(10),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
-                if (icon != null) ...[
-                  icon,
-                  const SizedBox(width: 10),
-                ],
+                if (icon != null) 
+                  SizedBox(
+                    width: 24,  // Fixed width for icon
+                    height: 24, // Fixed height for icon
+                    child: icon,
+                  ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     title,
@@ -215,10 +291,11 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SvgPicture.asset(
-                  'assets/icons/arrow_right.svg',
-                  width: 20,
-                  height: 20,
+                if (trailing != null) trailing,
+                const Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: Colors.black54,
                 ),
               ],
             ),

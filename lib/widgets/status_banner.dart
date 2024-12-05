@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
+import '../screens/main_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class StatusBanner extends StatelessWidget {
   final String status;
   final VoidCallback onButtonPressed;
+  final BuildContext context;
 
   const StatusBanner({
     super.key,
     required this.status,
     required this.onButtonPressed,
+    required this.context,
   });
 
   Color getBannerColor() {
-    switch (status.toUpperCase()) {
+    String statusToUse = status.toUpperCase();
+    if (statusToUse == "NO_SENSOR") {
+      statusToUse = "MEASURING";
+    }
+
+    switch (statusToUse) {
       case "IDEAL":
         return const Color(0xFF73C2FB);
       case "WATER_NEEDED":
@@ -29,55 +38,82 @@ class StatusBanner extends StatelessWidget {
   }
 
   String getTitle() {
-    switch (status.toUpperCase()) {
+    String statusToUse = status.toUpperCase();
+    if (statusToUse == "NO_SENSOR") {
+      statusToUse = "MEASURING";
+    }
+
+    switch (statusToUse) {
       case "IDEAL":
-        return "Back to Ideal!";
+        return AppLocalizations.of(context).backToIdeal;
       case "WATER_NEEDED":
       case "UNDERWATER":
-        return "Drying Out!";
+        return AppLocalizations.of(context).dryingOut;
       case "MEASURING":
-        return "Measuring...";
+        return AppLocalizations.of(context).measuring;
       case "WATERLOGGED":
-        return "Water-logged issue!";
+        return AppLocalizations.of(context).waterloggedIssue;
       case "OVERWATER":
-        return "Overwatered!";
+        return AppLocalizations.of(context).overwatered;
       default:
-        return "Status Unknown";
+        return AppLocalizations.of(context).measuring;
     }
   }
 
   String getSubtitle() {
-    switch (status.toUpperCase()) {
+    String statusToUse = status.toUpperCase();
+    if (statusToUse == "NO_SENSOR") {
+      statusToUse = "MEASURING";
+    }
+
+    switch (statusToUse) {
       case "IDEAL":
-        return "Nice job! Your plant looks lively again.";
+        return AppLocalizations.of(context).plantLivelyAgain;
       case "WATER_NEEDED":
       case "UNDERWATER":
-        return "Water your plant to bring it back to ideal moisture.";
+        return AppLocalizations.of(context).waterToIdeal;
       case "MEASURING":
-        return "Notify you as soon as the measurement is complete!";
+        return AppLocalizations.of(context).notifyWhenComplete;
       case "WATERLOGGED":
-        return "Drainage hasn't been sufficient for the past 3 days.";
+        return AppLocalizations.of(context).insufficientDrainage;
       case "OVERWATER":
-        return "Your plant has too much water. Let it dry out a bit.";
+        return AppLocalizations.of(context).tooMuchWater;
       default:
-        return "No details available.";
+        return AppLocalizations.of(context).notifyWhenComplete;
     }
   }
 
   String getButtonText() {
-    switch (status.toUpperCase()) {
+    String statusToUse = status.toUpperCase();
+    if (statusToUse == "NO_SENSOR") {
+      statusToUse = "MEASURING";
+    }
+
+    switch (statusToUse) {
       case "WATER_NEEDED":
       case "UNDERWATER":
-        return "Go to watering";
+      case "IDEAL":
+        return AppLocalizations.of(context).goToWatering;
       case "WATERLOGGED":
       case "OVERWATER":
-        return "Check instructions";
-      case "IDEAL":
+        return AppLocalizations.of(context).checkInstructions;
       case "MEASURING":
-        return "Learn more";
+        return AppLocalizations.of(context).learnMore;
       default:
-        return "Learn more";
+        return AppLocalizations.of(context).learnMore;
     }
+  }
+
+  void _navigateToWatering() {
+    if (!context.mounted) return;
+    
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MainScreen(initialIndex: 1),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -132,16 +168,26 @@ class StatusBanner extends StatelessWidget {
             height: 36,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: ShapeDecoration(
-              color: (status.toUpperCase() == "WATER_NEEDED" || 
+              color: status.toUpperCase() == "IDEAL" 
+                  ? const Color(0xFFE3F3FE)
+                  : (status.toUpperCase() == "WATER_NEEDED" || 
                      status.toUpperCase() == "UNDERWATER")
-                  ? const Color(0xFFF6F0CC)
-                  : Colors.white,
+                      ? const Color(0xFFF6F0CC)
+                      : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
             child: TextButton(
-              onPressed: onButtonPressed,
+              onPressed: () {
+                if (status.toUpperCase() == "IDEAL" ||
+                    status.toUpperCase() == "WATER_NEEDED" ||
+                    status.toUpperCase() == "UNDERWATER") {
+                  _navigateToWatering();
+                } else {
+                  onButtonPressed();
+                }
+              },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,
                 minimumSize: Size.zero,

@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../screens/camera_capture_screen.dart';
+import '../l10n/app_localizations.dart';
 
 // Define a reusable widget for the search bar.
 class PlantSearchBar extends StatefulWidget {
@@ -42,33 +43,32 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
                 controller: _searchController,
                 onChanged: widget.onSearch,
                 decoration: InputDecoration(
-                  hintText: 'Which one to add?',
+                  hintText: AppLocalizations.of(context).whichOneToAdd,
                   hintStyle: const TextStyle(
                     color: Color(0xFF6F6F6F),
                     fontSize: 16,
                     fontFamily: 'Inter',
                     letterSpacing: -0.16,
                   ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xFF6F6F6F),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(13),
+                    child: SvgPicture.asset(
+                      'assets/icons/search.svg',
+                      width: 24,
+                      height: 24,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF6F6F6F),
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
-                  suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          widget.onSearch('');
-                        },
-                      )
-                    : null,
                   border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -92,7 +92,10 @@ class _PlantSearchBarState extends State<PlantSearchBar> {
                 'assets/icons/camera.svg',
                 width: 24,
                 height: 24,
-                color: Colors.white,
+                colorFilter: const ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
               ),
             ),
           ),

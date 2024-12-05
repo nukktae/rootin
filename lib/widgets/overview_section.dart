@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../l10n/app_localizations.dart';
 
 class OverviewSection extends StatelessWidget {
   final double soilMoisture;
@@ -52,13 +53,13 @@ class OverviewSection extends StatelessWidget {
     return rate < 0.1 ? 0.1 : rate; // Minimum rate of 0.1% per hour
   }
 
-  String getMoistureStatus(double moisture) {
+  String getMoistureStatus(double moisture, BuildContext context) {
     if (moisture < 30) {
-      return 'Underwater';
+      return AppLocalizations.of(context).underwater;
     } else if (moisture > 70) {
-      return 'Overwatered';
+      return AppLocalizations.of(context).overwatered;
     } else {
-      return 'Ideal';
+      return AppLocalizations.of(context).ideal;
     }
   }
 
@@ -77,13 +78,13 @@ class OverviewSection extends StatelessWidget {
 
   Widget _buildTooltipContent(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        'Upcoming Watering Information',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      title: Text(
+        AppLocalizations.of(context).upcomingWateringInfo,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
-      content: const Text(
-        'The upcoming watering section shows how many days until the next scheduled watering for optimal plant care.',
-        style: TextStyle(fontSize: 14, color: Colors.black87),
+      content: Text(
+        AppLocalizations.of(context).upcomingWateringDesc,
+        style: const TextStyle(fontSize: 14, color: Colors.black87),
       ),
       actions: [
         TextButton(
@@ -96,16 +97,15 @@ class OverviewSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final moistureStatus = getMoistureStatus(soilMoisture);
+    final moistureStatus = getMoistureStatus(soilMoisture, context);
     final moistureColor = getMoistureColor(moistureStatus);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Overview Title and Subtitle (outside of white container)
-        const Text(
-          'Overview',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context).overview,
+          style: const TextStyle(
             color: Colors.black,
             fontSize: 22,
             fontFamily: 'Inter',
@@ -114,9 +114,9 @@ class OverviewSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Soil moisture updates every minute for real-time care!',
-          style: TextStyle(
+        Text(
+          AppLocalizations.of(context).soilMoistureUpdates,
+          style: const TextStyle(
             color: Color(0xFF757575),
             fontSize: 12,
             fontFamily: 'Inter',
@@ -142,9 +142,9 @@ class OverviewSection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Current\nSoil Moisture',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context).currentSoilMoisture,
+                      style: const TextStyle(
                         color: Color(0xFF757575),
                         fontSize: 14,
                         fontFamily: 'Inter',
@@ -194,10 +194,10 @@ class OverviewSection extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'Upcoming\nWatering',
-                            style: TextStyle(
+                            AppLocalizations.of(context).upcomingWatering,
+                            style: const TextStyle(
                               color: Color(0xFF757575),
                               fontSize: 14,
                               fontFamily: 'Inter',
@@ -215,14 +215,17 @@ class OverviewSection extends StatelessWidget {
                             'assets/icons/info_icon.svg',
                             width: 16,
                             height: 16,
-                            color: const Color(0xFF757575),
+                            colorFilter: const ColorFilter.mode(
+                              Color(0xFF757575),
+                              BlendMode.srcIn,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const Spacer(),
                     Text(
-                      calculateDaysUntilWatering() == 0 ? 'Today' : calculateDaysUntilWatering().toString(),
+                      calculateDaysUntilWatering() == 0 ? AppLocalizations.of(context).today : calculateDaysUntilWatering().toString(),
                       style: const TextStyle(
                         color: Color(0xFFFFB749),
                         fontSize: 28,
@@ -232,9 +235,9 @@ class OverviewSection extends StatelessWidget {
                       ),
                     ),
                     if (calculateDaysUntilWatering() != 0)
-                      const Text(
-                        'days later',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).daysLater,
+                        style: const TextStyle(
                           color: Color(0xFFFFB749),
                           fontSize: 16,
                           fontFamily: 'Inter',

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../l10n/app_localizations.dart';
 import '../constants/api_constants.dart';
 import '../models/plant.dart';
 import './add_plant_detail_screen.dart';
@@ -221,11 +222,11 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
             ),
             const SizedBox(height: 24),
             // Title
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Identify your plant first',
-                style: TextStyle(
+                AppLocalizations.of(context).identifyPlantFirst,
+                style: const TextStyle(
                   color: Colors.black,
                   fontSize: 22,
                   fontFamily: 'Inter',
@@ -235,11 +236,11 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
               ),
             ),
             const SizedBox(height: 4),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Search by plant name or use an image to identify.',
-                style: TextStyle(
+                AppLocalizations.of(context).searchByNameOrImage,
+                style: const TextStyle(
                   fontSize: 14,
                   fontFamily: 'Inter',
                   color: Color(0xFF6F6F6F),

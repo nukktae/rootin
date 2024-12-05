@@ -157,7 +157,7 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
               const Text(
                 'Searching Sensor...',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 28,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -168,7 +168,7 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
               const Text(
                 'To enter pairing mode, turn on Bluetooth mode and press the button on your sensor for about 3-5s.',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: Color(0xFF6F6F6F),
                   height: 1.5,
                 ),
@@ -176,7 +176,7 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
 
               const Spacer(),
 
-              // Sensor Icon with Search Button
+              // Sensor Image
               Center(
                 child: GestureDetector(
                   onTap: () => _showBluetoothSearchModal(context),
@@ -187,10 +187,9 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
                       color: Color(0xFFF5F5F5),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.sensors,
-                      size: 100,
-                      color: Colors.black,
+                    child: Image.asset(
+                      'assets/images/bluetoothsearch.png',
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -214,7 +213,7 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
                     'Buy a sensor',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../l10n/app_localizations.dart';
 import './room_selection_screen.dart';
 
 class SiteSelectionScreen extends StatefulWidget {
@@ -74,48 +75,35 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final name = widget.name;
-    final subname = widget.subname ?? '';
-    final imageUrl = widget.imageUrl;
-
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20), // Reduced from 55.0 to 20.0
-
-              // Back Button with Circular Background
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0), // Reduced from 20.0 to 8.0
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE7E7E7),
-                    shape: BoxShape.circle,
+              const SizedBox(height: 16),
+              // Back button
+              Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xffE7E7E7),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/icons/arrow.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
                   ),
-                  child: IconButton(
-                    icon: SvgPicture.asset(
-                      'assets/icons/arrow.svg',
-                      width: 24,
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.grey,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(height: 16), // Reduced from 24
-
-              // Title and Subtitle
-              const Text(
-                'Choose Site of the plant',
-                style: TextStyle(
+              const SizedBox(height: 32),
+              Text(
+                AppLocalizations.of(context).chooseSite,
+                style: const TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w600,
                   fontSize: 22,
@@ -123,19 +111,18 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                   letterSpacing: -0.22,
                 ),
               ),
-              const SizedBox(height: 8), // Reduced spacing
-              const Text(
-                'Select a site or add a custom option.',
-                style: TextStyle(
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.of(context).selectSiteOrCustom,
+                style: const TextStyle(
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w500,
                   fontSize: 14,
                   color: Color(0xff6F6F6F),
                 ),
               ),
-              const SizedBox(height: 16), // Reduced spacing before grid
-
-              // Site Selection Grid
+              const SizedBox(height: 32),
+              // Grid remains the same, just update the text for "Add your own"
               Expanded(
                 child: GridView.builder(
                   padding: const EdgeInsets.only(top: 0),
@@ -148,7 +135,6 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                   itemCount: sites.length + 1, // Add space for "+ Add your own"
                   itemBuilder: (context, index) {
                     if (index == sites.length) {
-                      // Add Custom Site Button
                       return Container(
                         decoration: ShapeDecoration(
                           shape: RoundedRectangleBorder(
@@ -161,10 +147,10 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                         ),
                         child: InkWell(
                           onTap: showAddSiteDialog,
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              '+ Add your own',
-                              style: TextStyle(
+                              AppLocalizations.of(context).addYourOwn,
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 16,
                                 fontFamily: 'Inter',
@@ -207,8 +193,7 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                   },
                 ),
               ),
-
-              // Continue Button
+              // Continue button
               Padding(
                 padding: const EdgeInsets.only(bottom: 32.0),
                 child: SizedBox(

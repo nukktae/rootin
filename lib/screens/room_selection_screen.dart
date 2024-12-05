@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
 import 'confirm_plant_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class RoomSelectionScreen extends StatefulWidget {
   final String site;
@@ -198,14 +199,14 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
               const SizedBox(height: 40), // Keep this spacing for the content below
 
               // Location text
-              const Padding(
-                padding: EdgeInsets.only(left: 0),
+              Padding(
+                padding: const EdgeInsets.only(left: 0),
                 child: SizedBox(
                   width: double.infinity,
                   height: 30,
                   child: Text(
-                    'Location',
-                    style: TextStyle(
+                    AppLocalizations.of(context).location,
+                    style: const TextStyle(
                       color: Color(0xFF757575),
                       fontSize: 22,
                       fontFamily: 'Inter',
@@ -244,11 +245,11 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
               const SizedBox(height: 40), // Increased from 24 to 40
 
               // "Choose area of the plant" text
-              const SizedBox(
+              SizedBox(
                 width: 353,
                 child: Text(
-                  'Choose area of the plant',
-                  style: TextStyle(
+                  AppLocalizations.of(context).chooseArea,
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 22,
                     fontFamily: 'Inter',
@@ -287,13 +288,13 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                         ),
                         child: InkWell(
                           onTap: showAddRoomDialog,
-                          child: const FittedBox(
+                          child: FittedBox(
                             fit: BoxFit.scaleDown,
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
                               child: Text(
-                                '+ Add Room',
-                                style: TextStyle(
+                                AppLocalizations.of(context).addRoom,
+                                style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 16,
                                   fontFamily: 'Inter',
@@ -344,9 +345,9 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
 
               const Spacer(),
 
-              // Continue button with increased bottom padding
+              // Continue button
               Padding(
-                padding: const EdgeInsets.only(bottom: 1.0), // Increased from 32 to 48
+                padding: const EdgeInsets.only(bottom: 1.0),
                 child: SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -375,9 +376,9 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Continue',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context).continueText,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

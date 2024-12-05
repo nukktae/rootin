@@ -3,6 +3,7 @@ import '../widgets/status_icon.dart';
 import 'dart:developer';
 import '../screens/plant_detail_screen.dart';
 import '../models/plant.dart';
+import '../l10n/app_localizations.dart';
 
 class PlantGridView extends StatelessWidget {
   final List<Plant> plants;
@@ -19,7 +20,7 @@ class PlantGridView extends StatelessWidget {
     if (plants.isEmpty) {
       return Center(
         child: Text(
-          emptyMessage,
+          AppLocalizations.of(context).tryToAddPlant,
           style: const TextStyle(
             color: Color(0xFF6F6F6F),
             fontSize: 14,
@@ -37,7 +38,7 @@ class PlantGridView extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 0.65,
+        childAspectRatio: 0.75,
       ),
       itemCount: plants.length,
       itemBuilder: (context, index) {
@@ -61,51 +62,54 @@ class PlantGridView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Container(
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFEEEEEE),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ClipRRect(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: Container(
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFEEEEEE),
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          child: plant.imageUrl != null
-                              ? Image.network(
-                                  plant.imageUrl,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value: loadingProgress.expectedTotalBytes != null
-                                            ? loadingProgress.cumulativeBytesLoaded /
-                                                loadingProgress.expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    log('Image error for ${plant.nickname}: $error');
-                                    return const Icon(
-                                      Icons.image_not_supported,
-                                      color: Color(0xFF8E8E8E),
-                                    );
-                                  },
-                                )
-                              : const SizedBox.shrink(),
                         ),
-                        Positioned(
-                          bottom: 10,
-                          left: 10,
-                          child: StatusIcon(status: plant.status ?? 'NO_SENSOR'),
-                        ),
-                      ],
+                      ),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: plant.imageUrl != null
+                                ? Image.network(
+                                    plant.imageUrl,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      log('Image error for ${plant.nickname}: $error');
+                                      return const Icon(
+                                        Icons.image_not_supported,
+                                        color: Color(0xFF8E8E8E),
+                                      );
+                                    },
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                          Positioned(
+                            bottom: 10,
+                            left: 10,
+                            child: StatusIcon(status: plant.status ?? 'NO_SENSOR'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -117,11 +121,12 @@ class PlantGridView extends StatelessWidget {
                     fontSize: 16,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
+                    height: 1.0,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
                   plant.plantTypeName,
                   style: const TextStyle(
@@ -129,18 +134,20 @@ class PlantGridView extends StatelessWidget {
                     fontSize: 12,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w400,
+                    height: 1.0,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 Text(
-                  'In ${plant.category.split('/').last}',
+                  '${AppLocalizations.of(context).in_} ${plant.category.split('/').last}',
                   style: const TextStyle(
                     color: Color(0xFF6F6F6F),
                     fontSize: 12,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w400,
+                    height: 1.0,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

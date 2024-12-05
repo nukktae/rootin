@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/home_screen.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
+import '../screens/main_screen.dart';
 
 class FinalStepScreen extends StatelessWidget {
   final String plantNickname;
@@ -55,7 +56,7 @@ class FinalStepScreen extends StatelessWidget {
                       fontSize: 22,
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w600,
-                      height: 0.06,
+                      height: 1.2,
                       letterSpacing: -0.22,
                     ),
                   ),
@@ -70,7 +71,7 @@ class FinalStepScreen extends StatelessWidget {
                       fontSize: 14,
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w500,
-                      height: 0.10,
+                      height: 1.5,
                       letterSpacing: -0.28,
                     ),
                   ),
@@ -85,9 +86,20 @@ class FinalStepScreen extends StatelessWidget {
                           width: 120,
                           height: 120,
                           decoration: BoxDecoration(
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(24),
-                            image: DecorationImage(
-                              image: NetworkImage(imageUrl),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Image.network(
+                              imageUrl,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -95,14 +107,12 @@ class FinalStepScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Text(
                           plantNickname,
-                          textAlign: TextAlign.center,
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 24,
                             fontFamily: 'Inter',
-                            fontWeight: FontWeight.w700,
-                            height: 0.06,
-                            letterSpacing: -0.24,
+                            fontWeight: FontWeight.w600,
+                            height: 1.2,
                           ),
                         ),
                       ],
@@ -116,74 +126,81 @@ class FinalStepScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(32),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Sensor Name Section
                         const Text(
                           'Sensor Name',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
                             fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            height: 0.09,
-                            letterSpacing: -0.16,
+                            fontWeight: FontWeight.w500,
+                            height: 1.2,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.sensors, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              sensorId,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                height: 0.07,
-                                letterSpacing: -0.20,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.sensors, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                sensorId,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.2,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
-                        // Network Section
                         const Text(
                           'Network',
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 16,
                             fontFamily: 'Inter',
-                            fontWeight: FontWeight.w600,
-                            height: 0.09,
-                            letterSpacing: -0.16,
+                            fontWeight: FontWeight.w500,
+                            height: 1.2,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.wifi, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              networkName,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 20,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                height: 0.07,
-                                letterSpacing: -0.20,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.wifi, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                networkName,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.2,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -192,27 +209,16 @@ class FinalStepScreen extends StatelessWidget {
                   const Spacer(),
 
                   // Start Care Button
-                  SizedBox(
+                  Container(
                     width: double.infinity,
                     height: 56,
+                    margin: const EdgeInsets.only(bottom: 32),
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Scaffold(
-                              body: HomeScreen(
-                                setCurrentIndex: (index) {
-                                  // This will be handled by the parent widget
-                                },
-                              ),
-                              bottomNavigationBar: CustomBottomNavigationBar(
-                                currentIndex: 0,  // Start at home tab
-                                onTap: (index) {
-                                  // Handle tab changes
-                                },
-                              ),
-                            ),
+                            builder: (context) => const MainScreen(initialIndex: 0),
                           ),
                           (route) => false,
                         );
@@ -230,8 +236,7 @@ class FinalStepScreen extends StatelessWidget {
                           fontSize: 16,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w600,
-                          height: 0.09,
-                          letterSpacing: -0.16,
+                          height: 1.2,
                         ),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../screens/plant_detail_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class UnderwaterPlantsCard extends StatelessWidget {
   final List<Map<String, dynamic>> plants;
@@ -16,11 +17,11 @@ class UnderwaterPlantsCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(
+        SizedBox(
           width: 353,
           child: Text(
-            'To-Do',
-            style: TextStyle(
+            AppLocalizations.of(context).todo,
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 22,
               fontFamily: 'Inter',
@@ -61,17 +62,17 @@ class UnderwaterPlantsCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.water_drop_outlined,
                           color: Colors.white,
                           size: 20,
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
-                          'Underwater',
-                          style: TextStyle(
+                          AppLocalizations.of(context).underwater,
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
                             fontFamily: 'Inter',
@@ -84,7 +85,7 @@ class UnderwaterPlantsCard extends StatelessWidget {
                   ),
                   // Count badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 13.5, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: ShapeDecoration(
                       color: const Color(0x33D4B500),
                       shape: RoundedRectangleBorder(
@@ -152,7 +153,7 @@ class UnderwaterPlantsCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                entry.value['location'] ?? 'Location',
+                                '${AppLocalizations.of(context).in_} ${entry.value['location'].toString().split('/').last}',
                                 style: const TextStyle(
                                   color: Color(0xFF6F6F6F),
                                   fontSize: 12,

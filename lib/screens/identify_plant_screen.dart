@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'name_input_screen.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-
+import '../l10n/app_localizations.dart';
 class IdentifyPlantScreen extends StatefulWidget {
   final File imageFile;
 
@@ -248,7 +248,7 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
           
           // Plant name and scientific name
           Text(
-            _identifiedPlant?['name'] ?? 'Identified Plant',
+            _identifiedPlant?['name'] ?? AppLocalizations.of(context).identifiedPlant,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w600,
@@ -257,7 +257,7 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
           ),
           const SizedBox(height: 4),
           Text(
-            _identifiedPlant?['subname'] ?? 'Scientific Name',
+            _identifiedPlant?['subname'] ?? AppLocalizations.of(context).scientificName,
             style: const TextStyle(
               fontSize: 16,
               color: Color(0xFF6F6F6F),
@@ -304,9 +304,9 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                'Add Plant',
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context).addPlant,
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -319,9 +319,9 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
           // Retake Photo button
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Retake Photo',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context).retakePhoto,
+              style: const TextStyle(
                 color: Color(0xFF6F6F6F),
                 fontSize: 16,
               ),
@@ -337,9 +337,9 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            'Failed to identify plant',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).failedToIdentify,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
