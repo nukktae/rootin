@@ -21,25 +21,49 @@ class NameInputScreen extends StatefulWidget {
   State<NameInputScreen> createState() => _NameInputScreenState();
 }
 
-class _NameInputScreenState extends State<NameInputScreen> {
+class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   bool _isButtonEnabled = false;
   static const int maxCharacters = 20;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
+    // Initialize animation controller
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    
+    // Create scale animation
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
     _nameController.addListener(() {
       setState(() {
-        // Check both for non-empty and within character limit
-        _isButtonEnabled = _nameController.text.isNotEmpty && 
+        bool newIsValid = _nameController.text.isNotEmpty && 
                          _nameController.text.length <= maxCharacters;
+        _isButtonEnabled = newIsValid;
+        
+        // Animate the checkmark based on validity
+        if (newIsValid) {
+          _animationController.forward();
+        } else {
+          _animationController.reverse();
+        }
       });
     });
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     _nameController.dispose();
     super.dispose();
   }
@@ -191,20 +215,26 @@ class _NameInputScreenState extends State<NameInputScreen> {
                             filled: false,
                           ),
                         ),
-                        if (_isValidInput) // Show check icon only when input is valid
+                        if (_isValidInput)
                           Positioned(
                             right: 12,
                             top: 12,
-                            child: Container(
-                              width: 24,
-                              height: 24,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.check_circle,
-                                color: Color(0xFF0E8345), // Updated to the exact green color
-                                size: 24,
+                            child: FadeTransition(
+                              opacity: _scaleAnimation,
+                              child: ScaleTransition(
+                                scale: _scaleAnimation,
+                                child: Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.check_circle,
+                                    color: Color(0xFF0E8345), // Updated to the exact green color
+                                    size: 24,
+                                  ),
+                                ),
                               ),
                             ),
                           ),

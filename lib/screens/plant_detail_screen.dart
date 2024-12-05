@@ -257,16 +257,19 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                                 ),
                                 const SizedBox(height: 16),
                                 _buildShineEffect(
-                                  Container(
-                                    width: 250,
-                                    height: 250,
-                                    decoration: ShapeDecoration(
-                                      image: DecorationImage(
-                                        image: NetworkImage(plant.imageUrl),
-                                        fit: BoxFit.cover,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(45),
+                                  Hero(
+                                    tag: 'plant-main-${plant.plantId}',
+                                    child: Container(
+                                      width: 250,
+                                      height: 250,
+                                      decoration: ShapeDecoration(
+                                        image: DecorationImage(
+                                          image: NetworkImage(plant.imageUrl),
+                                          fit: BoxFit.cover,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(45),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -288,16 +291,19 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                                 curve: Curves.easeInOut,
                               );
                             },
-                            child: Container(
-                              width: 150,
-                              height: 150,
-                              decoration: ShapeDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(plants[_currentIndex - 1].imageUrl),
-                                  fit: BoxFit.cover,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(40),
+                            child: Hero(
+                              tag: 'plant-prev-${plants[_currentIndex - 1].plantId}',
+                              child: Container(
+                                width: 150,
+                                height: 150,
+                                decoration: ShapeDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(plants[_currentIndex - 1].imageUrl),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
                                 ),
                               ),
                             ),
@@ -315,16 +321,19 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                                 curve: Curves.easeInOut,
                               );
                             },
-                            child: Container(
-                              width: 150,
-                              height: 150,
-                              decoration: ShapeDecoration(
-                                image: DecorationImage(
-                                  image: NetworkImage(plants[_currentIndex + 1].imageUrl),
-                                  fit: BoxFit.cover,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(40),
+                            child: Hero(
+                              tag: 'plant-next-${plants[_currentIndex + 1].plantId}',
+                              child: Container(
+                                width: 150,
+                                height: 150,
+                                decoration: ShapeDecoration(
+                                  image: DecorationImage(
+                                    image: NetworkImage(plants[_currentIndex + 1].imageUrl),
+                                    fit: BoxFit.cover,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(40),
+                                  ),
                                 ),
                               ),
                             ),
