@@ -11,7 +11,7 @@ PODS:
   - Firebase/Storage (11.4.0):
     - Firebase/CoreOnly
     - FirebaseStorage (~> 11.4.0)
-  - firebase_core (3.8.0):
+  - firebase_core (3.8.1):
     - Firebase/CoreOnly (= 11.4.0)
     - Flutter
   - firebase_messaging (15.1.5):
@@ -216,7 +216,7 @@ SPEC CHECKSUMS:
   app_settings: 017320c6a680cdc94c799949d95b84cb69389ebc
   camera_avfoundation: dd002b0330f4981e1bbcb46ae9b62829237459a4
   Firebase: cf1b19f21410b029b6786a54e9764a0cacad3c99
-  firebase_core: 9efc3ecf689cdbc90f13f4dc58108c83ea46b266
+  firebase_core: 418aed674e9a0b8b6088aec16cde82a811f6261f
   firebase_messaging: 6bf60adb4b33a848d135e16bc363fb4924f98fba
   firebase_storage: 942caaa628c22c941bff8af058347cc5c38a70bf
   FirebaseAppCheckInterop: 347aa09a805219a31249b58fc956888e9fcb314b

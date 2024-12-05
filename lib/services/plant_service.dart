@@ -142,27 +142,60 @@ class PlantService {
 
   Future<Plant> getPlantDetail(String plantId) async {
     try {
-      final response = await _dio.get('/v1/plants/$plantId');
-      if (response.statusCode == 200 && response.data != null) {
-        return Plant.fromJson(response.data['data']);
+      final token = await _getValidToken();
+      if (token == null) {
+        dev.log('FCM token not available');
+        throw Exception('FCM token not available');
       }
-      throw Exception('Plant not found');
-    } catch (e) {
-      print('Error in getPlantDetail: $e');
-      throw Exception('Failed to load plant details');
-    }
-  }
 
-  Future<void> updatePlant(String plantId, Map<String, dynamic> data) async {
-    try {
-      final response = await _dio.put('/v1/plants/$plantId', data: data);
-      
-      if (response.statusCode != 200) {
-        throw Exception('Failed to update plant: ${response.statusCode}');
+      final url = '${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/plants/$plantId';
+      dev.log('Fetching plant details from: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      dev.log('Plant detail response status: ${response.statusCode}');
+      dev.log('Plant detail response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final plantData = jsonResponse['data'];
+        
+        return Plant.fromJson({
+          'id': plantData['id'] ?? '',
+          'plantId': plantData['plantId'] ?? '',
+          'plantTypeId': plantData['plantTypeId'] ?? '',
+          'name': plantData['name'] ?? '',
+          'nickname': plantData['nickname'] ?? '',
+          'plantTypeName': plantData['plantTypeName'] ?? '',
+          'scientificName': plantData['scientificName'] ?? '',
+          'imageUrl': plantData['imageUrl'] ?? '',
+          'description': plantData['description'] ?? '',
+          'category': plantData['category'] ?? '',
+          'status': plantData['status'] ?? '',
+          'currentMoisture': plantData['currentMoisture'] ?? 0.0,
+          'moistureRange': {
+            'min': plantData['moistureRange']?['min'] ?? 0.0,
+            'max': plantData['moistureRange']?['max'] ?? 0.0,
+          },
+          'infoDifficulty': plantData['infoDifficulty'] ?? '',
+          'infoWatering': plantData['infoWatering'] ?? '',
+          'infoLight': plantData['infoLight'] ?? '',
+          'infoSoilType': plantData['infoSoilType'] ?? '',
+          'infoRepotting': plantData['infoRepotting'] ?? '',
+          'infoToxicity': plantData['infoToxicity'] ?? '',
+        });
       }
+      throw Exception('Failed to load plant details: ${response.statusCode}');
     } catch (e) {
-      print('Error in updatePlant: $e');
-      throw Exception('Failed to update plant');
+      dev.log('Error in getPlantDetail: $e');
+      throw Exception('Failed to load plant details');
     }
   }
 

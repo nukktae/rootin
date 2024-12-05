@@ -1,3 +1,4 @@
+import 'dart:math' show pi;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -27,13 +28,11 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
   late PageController _pageController;
   int _currentIndex = 0;
   List<Map<String, dynamic>> historicalData = [];
-  late AnimationController _shineController;
-  late Animation<double> _shineAnimation;
+  Key _moistureScreenKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
-    _initShineAnimation();
     _pageController = PageController(
       viewportFraction: 0.95,
       initialPage: 0,
@@ -53,40 +52,17 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
     loadPlantData();
   }
 
-  void _initShineAnimation() {
-    _shineController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    
-    _shineAnimation = Tween<double>(
-      begin: -1.0,
-      end: 2.0,
-    ).animate(CurvedAnimation(
-      parent: _shineController,
-      curve: Curves.easeInOut,
-    ));
-
-    // Start initial shine animation
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _shineController.forward();
-    });
-  }
-
   void _handlePageChange() {
     if (_pageController.page?.round() != _currentIndex) {
       setState(() {
         _currentIndex = _pageController.page!.round();
+        _moistureScreenKey = UniqueKey();
       });
-      // Trigger shine animation for the new plant
-      _shineController.reset();
-      _shineController.forward();
     }
   }
 
   @override
   void dispose() {
-    _shineController.dispose();
     _pageController.removeListener(_handlePageChange);
     _pageController.dispose();
     super.dispose();
@@ -186,7 +162,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildIconButton('close.svg', () => Navigator.pop(context)),
                     ],
@@ -262,13 +238,27 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                                     child: Container(
                                       width: 250,
                                       height: 250,
-                                      decoration: ShapeDecoration(
-                                        image: DecorationImage(
-                                          image: NetworkImage(plant.imageUrl),
-                                          fit: BoxFit.cover,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(45),
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
                                         ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(45),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(40),
+                                          image: DecorationImage(
+                                            image: NetworkImage(plant.imageUrl),
+                                            fit: BoxFit.cover,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -296,13 +286,22 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                               child: Container(
                                 width: 150,
                                 height: 150,
-                                decoration: ShapeDecoration(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(40),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
                                   image: DecorationImage(
                                     image: NetworkImage(plants[_currentIndex - 1].imageUrl),
                                     fit: BoxFit.cover,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(40),
                                   ),
                                 ),
                               ),
@@ -326,13 +325,22 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                               child: Container(
                                 width: 150,
                                 height: 150,
-                                decoration: ShapeDecoration(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(40),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 8,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
                                   image: DecorationImage(
                                     image: NetworkImage(plants[_currentIndex + 1].imageUrl),
                                     fit: BoxFit.cover,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(40),
                                   ),
                                 ),
                               ),
@@ -427,6 +435,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
                         ],
                       )
                     : RealTimeSoilMoistureScreen(
+                        key: _moistureScreenKey,
                         plantDetail: {
                           'plantId': plants[_currentIndex].plantId,
                           'current_moisture': plants[_currentIndex].currentMoisture,
@@ -464,46 +473,6 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> with SingleTicker
   }
 
   Widget _buildShineEffect(Widget child) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(45),
-      child: Stack(
-        children: [
-          child,
-          AnimatedBuilder(
-            animation: _shineAnimation,
-            builder: (context, child) {
-              return Positioned.fill(
-                child: Transform.rotate(
-                  angle: -0.8,
-                  child: Transform.translate(
-                    offset: Offset(
-                      _shineAnimation.value * 300,
-                      0,
-                    ),
-                    child: Container(
-                      width: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.white.withOpacity(0),
-                            Colors.white.withOpacity(0.3),
-                            Colors.white.withOpacity(0.6),
-                            Colors.white.withOpacity(0.3),
-                            Colors.white.withOpacity(0),
-                          ],
-                          stops: const [0.0, 0.35, 0.5, 0.65, 1.0],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
+    return child;
   }
 }

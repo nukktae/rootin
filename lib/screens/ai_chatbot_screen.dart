@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -7,13 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
 import '../models/plant.dart';
 import '../widgets/plant_ai_title_bar.dart';
 import '../widgets/input_bar.dart';
 import '../widgets/suggestion_bar.dart'; // Import the SuggestionBar widget.
 import '../l10n/app_localizations.dart';
-import '../providers/language_provider.dart';
 
 class AIChatbotScreen extends StatefulWidget {
   final Plant? plant;
@@ -37,6 +36,8 @@ class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProvi
   late Animation<double> _scaleAnimation;
   late Animation<double> _floatAnimation;
   late Animation<double> _opacityAnimation;
+  final Map<int, String> _displayedMessages = {};
+  final Map<int, Timer> _messageTimers = {};
 
   @override
   void initState() {
@@ -79,6 +80,8 @@ class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProvi
   @override
   void dispose() {
     _animationController.dispose();
+    _messageTimers.forEach((_, timer) => timer.cancel());
+    _messageTimers.clear();
     super.dispose();
   }
 
@@ -168,10 +171,12 @@ class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProvi
 
       setState(() {
         if (response.statusCode == 200) {
+          final message = data['result'] ?? "No response received.";
           chatMessages.add({
             "sender": "ai",
-            "message": data['result'] ?? "No response received.",
+            "message": message,
           });
+          _animateText(chatMessages.length - 1, message);
         } else {
           chatMessages.add({
             "sender": "system",
@@ -249,6 +254,35 @@ class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProvi
       localizations.properWatering,
       localizations.wateringFrequency,
     ];
+  }
+
+  void _animateText(int index, String message) {
+    if (_messageTimers.containsKey(index)) {
+      _messageTimers[index]?.cancel();
+    }
+
+    const speed = 8; // Changed from 20 to 8 milliseconds per character
+    String currentText = '';
+    int currentIndex = 0;
+
+    _messageTimers[index] = Timer.periodic(Duration(milliseconds: speed), (timer) {
+      // Add batch processing to make it even faster
+      for (var i = 0; i < 2; i++) { // Process 2 characters at once
+        if (currentIndex < message.length) {
+          currentText += message[currentIndex];
+          currentIndex++;
+        }
+      }
+      
+      setState(() {
+        _displayedMessages[index] = currentText;
+      });
+      
+      if (currentIndex >= message.length) {
+        timer.cancel();
+        _messageTimers.remove(index);
+      }
+    });
   }
 
   @override
@@ -366,7 +400,9 @@ class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProvi
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: isAI
-                                          ? MarkdownBody(data: message['message'] ?? '')
+                                          ? MarkdownBody(
+                                              data: _displayedMessages[index] ?? message['message'] ?? '',
+                                            )
                                           : Text(
                                               message['message'] ?? '',
                                               style: TextStyle(

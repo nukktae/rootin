@@ -7,8 +7,11 @@ import '../screens/notification_settings_screen.dart';
 import '../providers/language_provider.dart';
 import '../l10n/app_localizations.dart';
 import 'package:camera/camera.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
+import '../screens/privacy_policy_screen.dart';
+import '../screens/notification_settings_screen.dart';
+import '../screens/sensor_settings_screen.dart';
+import '../screens/terms_of_service_screen.dart';
+
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -88,10 +91,9 @@ class ProfileScreen extends StatelessWidget {
                 const Text(
                   'My Page',
                   style: TextStyle(
-                    color: Colors.black,
                     fontSize: 28,
-                    fontFamily: 'Inter',
                     fontWeight: FontWeight.w600,
+                    color: Colors.black,
                     letterSpacing: -0.28,
                   ),
                 ),
@@ -131,7 +133,14 @@ class ProfileScreen extends StatelessWidget {
                 _buildMenuItem(
                   title: AppLocalizations.of(context).sensorSettings,
                   icon: SvgPicture.asset('assets/icons/sensor_icon.svg'),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SensorSettingsScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _buildMenuItem(
                   title: AppLocalizations.of(context).notifications,
@@ -210,7 +219,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   title: AppLocalizations.of(context).privacyPolicy,
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PrivacyPolicyScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _buildMenuItem(
                   title: AppLocalizations.of(context).termsOfService,
@@ -227,7 +243,6 @@ class ProfileScreen extends StatelessWidget {
                       style: TextStyle(
                         color: Color(0xFFF83446),
                         fontSize: 16,
-                        fontFamily: 'Inter',
                         fontWeight: FontWeight.w600,
                         letterSpacing: -0.32,
                       ),
@@ -268,16 +283,18 @@ class ProfileScreen extends StatelessWidget {
                 iconPath,
                 width: 24,
                 height: 24,
-                color: Colors.black,
+                colorFilter: const ColorFilter.mode(
+                  Colors.black,
+                  BlendMode.srcIn,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 title,
                 style: const TextStyle(
-                  color: Colors.black,
                   fontSize: 16,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
                   letterSpacing: -0.16,
                 ),
               ),
@@ -309,8 +326,8 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 if (icon != null) 
                   SizedBox(
-                    width: 24,  // Fixed width for icon
-                    height: 24, // Fixed height for icon
+                    width: 24,
+                    height: 24,
                     child: icon,
                   ),
                 const SizedBox(width: 10),
@@ -318,11 +335,9 @@ class ProfileScreen extends StatelessWidget {
                   child: Text(
                     title,
                     style: const TextStyle(
-                      color: Colors.black,
                       fontSize: 16,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
                     ),
                   ),
                 ),

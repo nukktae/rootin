@@ -1,7 +1,31 @@
 import 'package:flutter/material.dart';
+import '../widgets/app_guide/register_sensor_content.dart';
+import '../widgets/app_guide/notifications_content.dart';
+import '../widgets/app_guide/faq_content.dart';
+import '../widgets/app_guide/status_content.dart';
 
-class AppGuideScreen extends StatelessWidget {
+class AppGuideScreen extends StatefulWidget {
   const AppGuideScreen({super.key});
+
+  @override
+  State<AppGuideScreen> createState() => _AppGuideScreenState();
+}
+
+class _AppGuideScreenState extends State<AppGuideScreen> {
+  String _currentSection = 'Status';
+
+  Widget _getContent() {
+    switch (_currentSection) {
+      case 'Register Sensor':
+        return const RegisterSensorContent();
+      case 'Notifications':
+        return const NotificationsContent();
+      case 'FAQ':
+        return const FAQContent();
+      default:
+        return const StatusContent(); // You'll need to create this widget
+    }
+  }
 
   Widget _buildFilterChip(String label, bool isSelected) {
     return Container(
@@ -23,7 +47,9 @@ class AppGuideScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
         ),
         onSelected: (bool selected) {
-          // Handle filter selection
+          setState(() {
+            _currentSection = label;
+          });
         },
       ),
     );
@@ -53,7 +79,6 @@ class AppGuideScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
@@ -70,58 +95,19 @@ class AppGuideScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _buildFilterChip('Register Sensor', false),
-                          _buildFilterChip('Status', true),
-                          _buildFilterChip('Notifications', false),
-                          _buildFilterChip('FAQ', false),
+                          _buildFilterChip('Register Sensor', _currentSection == 'Register Sensor'),
+                          _buildFilterChip('Status', _currentSection == 'Status'),
+                          _buildFilterChip('Notifications', _currentSection == 'Notifications'),
+                          _buildFilterChip('FAQ', _currentSection == 'FAQ'),
                         ],
                       ),
                     ),
-                    
                     const SizedBox(height: 32),
-                    const Text(
-                      "How is a Plant's Status Determined?",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 22,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.22,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "A plant's status is determined based on data collected from sensors. The following are the typical statuses and their criteria:",
-                      style: TextStyle(
-                        color: Color(0xFF757575),
-                        fontSize: 14,
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: -0.28,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    Container(
-                      width: double.infinity,
-                      height: 135,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEEEEE),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/images/appguide.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
+                    _getContent(),
                   ],
                 ),
               ),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../screens/home_screen.dart';
-import '../widgets/custom_bottom_navigation_bar.dart';
 import '../screens/main_screen.dart';
 
 class FinalStepScreen extends StatelessWidget {
