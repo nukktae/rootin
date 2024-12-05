@@ -1,0 +1,27 @@
+# train_model.py
+import tensorflow as tf
+from tensorflow.keras import layers, models
+
+# Create a simple CNN model
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.Flatten(),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(1, activation='sigmoid')  # Binary classification
+])
+
+# Compile and train the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+# model.fit(...)
+
+# Convert to TFLite
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+tflite_model = converter.convert()
+
+# Save the model
+with open('assets/ml/plant_detector.tflite', 'wb') as f:
+    f.write(tflite_model)

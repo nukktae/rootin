@@ -322,17 +322,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (context) => const AddPlantScreen(),
                         ),
                       ),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEEEEEE),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.add,
-                          color: Color(0xFF8E8E8E),
-                          size: 24,
+                      child: Hero(
+                        tag: 'addPlantHero',
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFEEEEEE),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            color: Color(0xFF8E8E8E),
+                            size: 24,
+                          ),
                         ),
                       ),
                     ),
