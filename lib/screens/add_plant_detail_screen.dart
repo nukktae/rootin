@@ -76,13 +76,16 @@ class _AddPlantDetailScreenState extends State<AddPlantDetailScreen> {
                         ),
                         const SizedBox(height: 32),
                         Center(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: Image.network(
-                              widget.plant['imageUrl'],
-                              height: 200,
-                              width: 200,
-                              fit: BoxFit.cover,
+                          child: Hero(
+                            tag: 'plantHero-${widget.plant['id']}',
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.network(
+                                widget.plant['imageUrl'],
+                                height: 200,
+                                width: 200,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                         ),

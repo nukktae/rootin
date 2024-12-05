@@ -200,22 +200,25 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
             // Close button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                width: 48,
-                height: 48,
-                padding: const EdgeInsets.all(10),
-                decoration: ShapeDecoration(
-                  color: const Color(0xFFEEEEEE),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
+              child: Hero(
+                tag: 'addPlantHero',
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  padding: const EdgeInsets.all(10),
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFEEEEEE),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                   ),
-                ),
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: SvgPicture.asset(
-                    'assets/icons/close.svg',
-                    width: 28,
-                    height: 28,
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: SvgPicture.asset(
+                      'assets/icons/close.svg',
+                      width: 28,
+                      height: 28,
+                    ),
                   ),
                 ),
               ),
@@ -260,11 +263,14 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                       itemCount: filteredPlants.length,
                       itemBuilder: (context, index) {
                         final plant = filteredPlants[index];
-                        return PlantSearchItem(
-                          name: plant.name,
-                          subname: plant.scientificName,
-                          imageUrl: plant.imageUrl,
-                          onTap: () => _handlePlantSelection(plant),
+                        return Hero(
+                          tag: 'plantHero-${plant.id}',
+                          child: PlantSearchItem(
+                            name: plant.name,
+                            subname: plant.scientificName,
+                            imageUrl: plant.imageUrl,
+                            onTap: () => _handlePlantSelection(plant),
+                          ),
                         );
                       },
                     ),

@@ -6,6 +6,9 @@ import '../screens/app_guide_screen.dart';
 import '../screens/notification_settings_screen.dart';
 import '../providers/language_provider.dart';
 import '../l10n/app_localizations.dart';
+import 'package:camera/camera.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -29,6 +32,37 @@ class ProfileScreen extends StatelessWidget {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Could not open website'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _openPlantDiseaseCamera(BuildContext context) async {
+    try {
+      // Get available cameras
+      final cameras = await availableCameras();
+      
+      // Navigate to camera screen
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const Scaffold(
+              body: Center(
+                child: Text('Camera feature not available'),
+              ),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error accessing camera: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not access camera'),
             backgroundColor: Colors.red,
           ),
         );
@@ -171,6 +205,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 _buildMenuItem(
                   title: AppLocalizations.of(context).help,
+                  icon: const Icon(Icons.help_outline, color: Colors.black),
                   onTap: () {},
                 ),
                 _buildMenuItem(

@@ -3,7 +3,6 @@ platform :ios, '13.0'
 
 # Add this line to resolve Xcode 15 issues
 install! 'cocoapods', :deterministic_uuids => false
-
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -43,3 +42,4 @@ post_install do |installer|
     end
   end
 end
+
