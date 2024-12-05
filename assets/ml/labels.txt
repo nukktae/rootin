@@ -1,7 +1,0 @@
-person
-bicycle
-car
-...
-plant
-flower
-tree

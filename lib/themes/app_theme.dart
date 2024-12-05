@@ -56,10 +56,22 @@ class AppTheme {
   );
 
   // 테마 정의
-  static ThemeData get lightTheme {
+  static ThemeData get theme {
     return ThemeData(
       primaryColor: primaryColor,
       scaffoldBackgroundColor: gray100,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: white,
+        foregroundColor: black,
+        elevation: 0,
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: white,
+        selectedItemColor: primaryColor,
+        unselectedItemColor: gray600,
+        elevation: 0,
+      ),
+      iconTheme: const IconThemeData(color: black),
       colorScheme: const ColorScheme.light(
         primary: primaryColor,
         secondary: secondaryColor,

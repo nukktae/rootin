@@ -49,11 +49,9 @@ class UnderwaterPlantsCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with status and count
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Underwater status badge
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: ShapeDecoration(
@@ -71,7 +69,7 @@ class UnderwaterPlantsCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          AppLocalizations.of(context).underwater,
+                          AppLocalizations.of(context).underwatered,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -83,7 +81,6 @@ class UnderwaterPlantsCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Count badge
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: ShapeDecoration(
@@ -106,75 +103,73 @@ class UnderwaterPlantsCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-              // Plant list
               ...plants.asMap().entries.map((entry) => Padding(
-                padding: EdgeInsets.only(
-                  bottom: entry.key == plants.length - 1 ? 0 : 24,
-                ),
-                child: InkWell(
-                  onTap: () {
-                    print('Navigating to plant with typeId: ${entry.value['plantTypeId']}');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PlantDetailScreen(
-                          plantTypeId: entry.value['plantTypeId']?.toString() ?? '',
-                        ),
-                      ),
-                    );
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.network(
-                              entry.value['imageUrl'] ?? '',
-                              width: 58,
-                              height: 58,
-                              fit: BoxFit.cover,
+                    padding: EdgeInsets.only(
+                      bottom: entry.key == plants.length - 1 ? 0 : 24,
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlantDetailScreen(
+                              plantTypeId: entry.value['plantTypeId']?.toString() ?? '',
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        );
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
                             children: [
-                              Text(
-                                entry.value['name'] ?? 'Plant name',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: -0.28,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: Image.network(
+                                  entry.value['imageUrl'] ?? '',
+                                  width: 58,
+                                  height: 58,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${AppLocalizations.of(context).in_} ${entry.value['location'].toString().split('/').last}',
-                                style: const TextStyle(
-                                  color: Color(0xFF6F6F6F),
-                                  fontSize: 12,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: -0.24,
-                                ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.value['name'] ?? 'Plant name',
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 14,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: -0.28,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${AppLocalizations.of(context).in_} ${entry.value['location'].toString().split('/').last}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF6F6F6F),
+                                      fontSize: 12,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: -0.24,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: Colors.black,
+                            size: 16,
+                          ),
                         ],
                       ),
-                      const Icon(
-                        Icons.chevron_right,
-                        color: Colors.black,
-                        size: 16,
-                      ),
-                    ],
-                  ),
-                ),
-              )).toList(),
+                    ),
+                  )).toList(),
             ],
           ),
         ),

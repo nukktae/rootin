@@ -8,14 +8,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/plant.dart';
-import '../widgets/filter_modal.dart';
 import '../widgets/care_banner.dart';
 import '../widgets/plant_grid_view.dart';
 import '../screens/add_plant_screen.dart';
 import '../widgets/rootin_header.dart';
 import '../widgets/ai_chat_fab.dart';
 import '../services/plant_service.dart';
-import '../services/notification_service.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import '../l10n/app_localizations.dart';
 

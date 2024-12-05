@@ -140,6 +140,10 @@ class AppLocalizations {
       'cantFindReason': 'If you can\'t find the exact reason, chat with our AI diagnosing and figure out the problems.',
       'careTips': 'Care Tips',
       'realTimeSoilMoisture': 'Real-time Soil Moisture',
+      'underwatered': 'Underwatered',
+      'editPlant': 'Edit Plant',
+      'plantUpdated': 'Plant updated',
+      'failedToUpdate': 'Failed to update',
     },
     'ko': {
       'appTitle': '루틴',
@@ -199,7 +203,7 @@ class AppLocalizations {
       'repotting': '분갈이',
       'toxicity': '독성',
       'overview': '개요',
-      'soilMoistureUpdates': '실시간 관리�� 위해 매 토양 수분이 업데이트니다!',
+      'soilMoistureUpdates': '실시간 관리 위해 매 토양 수분이 업데이트니다!',
       'currentSoilMoisture': '현재\n양 수분',
       'upcomingWatering': '다음\n물주기',
       'daysLater': '일 후',
@@ -209,7 +213,7 @@ class AppLocalizations {
       'upcomingWateringDesc': '다음 물주기 섹션은 최적의 식물 관리를 위한 다음 예정된 물주기까지 남은 일수를 보여줍니다.',
       'plant': '식물이',
       'plants': '식이',
-      'waitingToBeWatered': '물을 기다리 있어요',
+      'waitingToBeWatered': '물을 기다��� 있어요',
       'checkYourWatering': '물주기 확인하기',
       'backToIdeal': '이상적인 상태로 돌아왔어요!',
       'dryingOut': '건조해지고 있어요!',
@@ -231,7 +235,7 @@ class AppLocalizations {
       'weeklyTrends': '주간 동향',
       'needHelpWith': '{plantName}에 대해 도움이 필요하신가요?',
       'identifyPlantFirst': '먼저 물을 식별하세요',
-      'searchByNameOrImage': '식물 이름으로 검색하거나 이미지를 사용하여 식별하세요.',
+      'searchByNameOrImage': '식물 이름으로 검��하거나 이미지를 사용하여 식별하세요.',
       'identifiedPlant': '식별된 식물',
       'scientificName': '학명',
       'addPlant': '식물 추가',
@@ -246,7 +250,7 @@ class AppLocalizations {
       'chooseSite': '식물의 위치를 선택하세요',
       'selectSiteOrCustom': '위치를 선택하거나 직접 추가하세요.',
       'addYourOwn': '+ 직접 추가',
-      'location': '위치',
+      'location': '치',
       'chooseArea': '식물의 구역을 선택하세요',
       'addRoom': '+ 방 추가',
       'readyToAddPlant': '식물을 추가할 준비가 되었나요?',
@@ -272,6 +276,10 @@ class AppLocalizations {
       'cantFindReason': '정확한 원인을 찾을 수 없다면, AI 진단과 채팅하여 문제를 파악하세요.',
       'careTips': '관리 팁',
       'realTimeSoilMoisture': '실시간 토양 수분',
+      'underwatered': 'Underwatered',
+      'editPlant': '식물 수정',
+      'plantUpdated': '식물이 업데이트되었습니다',
+      'failedToUpdate': '업데이트 실패',
     },
   };
 
@@ -405,6 +413,10 @@ class AppLocalizations {
   String get cantFindReason => _localizedValues[locale.languageCode]!['cantFindReason']!;
   String get careTips => _localizedValues[locale.languageCode]!['careTips']!;
   String get realTimeSoilMoisture => _localizedValues[locale.languageCode]!['realTimeSoilMoisture']!;
+  String get underwatered => _localizedValues[locale.languageCode]!['underwatered']!;
+  String get editPlant => _localizedValues[locale.languageCode]!['editPlant']!;
+  String get plantUpdated => _localizedValues[locale.languageCode]!['plantUpdated']!;
+  String get failedToUpdate => _localizedValues[locale.languageCode]!['failedToUpdate']!;
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

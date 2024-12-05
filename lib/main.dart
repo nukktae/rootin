@@ -103,32 +103,11 @@ void main() async {
   developer.log('FCM Token: $token');
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => LanguageProvider(),
-      child: Consumer<LanguageProvider>(
-        builder: (context, languageProvider, child) {
-          return MaterialApp(
-            title: 'Rootin',
-            localizationsDelegates: const [
-              AppLocalizationsDelegate(),
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('en', ''), // English
-              Locale('ko', ''), // Korean
-            ],
-            // Set initial locale (optional)
-            locale: languageProvider.currentLocale,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: AppTheme.primaryColor),
-              useMaterial3: true,
-            ),
-            home: const MainScreen(),
-          );
-        },
-      ),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
+      ],
+      child: const MyApp(),
     ),
   );
 }
@@ -320,25 +299,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Rootin',
-      localizationsDelegates: const [
-        AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', ''), // English
-        Locale('ko', ''), // Korean
-      ],
-      // Set initial locale (optional)
-      locale: const Locale('ko', ''), // Force Korean
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppTheme.primaryColor),
-        useMaterial3: true,
-      ),
-      home: const MainScreen(),
+    return Consumer<LanguageProvider>(
+      builder: (context, languageProvider, child) {
+        return MaterialApp(
+          title: 'Your App',
+          theme: AppTheme.theme,
+          localizationsDelegates: const [
+            AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''), // English
+            Locale('ko', ''), // Korean
+          ],
+          locale: languageProvider.currentLocale,
+          home: const MainScreen(),
+        );
+      },
     );
   }
 }
