@@ -219,11 +219,11 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
           ),
-          child: Row(
+          child: const Row(
             children: [
-              const Icon(Icons.wifi, size: 16, color: Color(0xFF404040)),
-              const SizedBox(width: 10),
-              const Text(
+              Icon(Icons.wifi, size: 16, color: Color(0xFF404040)),
+              SizedBox(width: 10),
+              Text(
                 'Said77',
                 style: TextStyle(
                   color: Colors.black,
@@ -245,11 +245,11 @@ class _SensorSettingsScreenState extends State<SensorSettingsScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
           ),
-          child: Row(
+          child: const Row(
             children: [
-              const Icon(Icons.bluetooth, size: 16, color: Color(0xFF404040)),
-              const SizedBox(width: 10),
-              const Text(
+              Icon(Icons.bluetooth, size: 16, color: Color(0xFF404040)),
+              SizedBox(width: 10),
+              Text(
                 'Nathan\'s iPhone',
                 style: TextStyle(
                   color: Colors.black,

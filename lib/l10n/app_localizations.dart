@@ -144,6 +144,7 @@ class AppLocalizations {
       'editPlant': 'Edit Plant',
       'plantUpdated': 'Plant updated',
       'failedToUpdate': 'Failed to update',
+      'selectRoomOrCustom': 'Select a room or add a custom location',
     },
     'ko': {
       'appTitle': '루틴',
@@ -213,7 +214,7 @@ class AppLocalizations {
       'upcomingWateringDesc': '다음 물주기 섹션은 최적의 식물 관리를 위한 다음 예정된 물주기까지 남은 일수를 보여줍니다.',
       'plant': '식물이',
       'plants': '식이',
-      'waitingToBeWatered': '물을 기다��� 있어요',
+      'waitingToBeWatered': '물을 기다 있어요',
       'checkYourWatering': '물주기 확인하기',
       'backToIdeal': '이상적인 상태로 돌아왔어요!',
       'dryingOut': '건조해지고 있어요!',
@@ -235,7 +236,7 @@ class AppLocalizations {
       'weeklyTrends': '주간 동향',
       'needHelpWith': '{plantName}에 대해 도움이 필요하신가요?',
       'identifyPlantFirst': '먼저 물을 식별하세요',
-      'searchByNameOrImage': '식물 이름으로 검��하거나 이미지를 사용하여 식별하세요.',
+      'searchByNameOrImage': '식물 이름으로 검하거나 이미지를 사용하여 식별하세요.',
       'identifiedPlant': '식별된 식물',
       'scientificName': '학명',
       'addPlant': '식물 추가',
@@ -270,7 +271,7 @@ class AppLocalizations {
       'emptyDripTray': '받침대 비우기',
       'dripTrayDesc': '물 아래 받침대에 고인 물이 있는지 확인하고 즉시 비우세요. 받침대에 물이 고여 있으면 식물의 뿌리가 고인 물과 계속 접촉하여 시간이 지나면서 썩을 수 있습니다. 물을 준 후 15-30분마다 받침대를 비우는 것이 가장 좋습니다.',
       'tryRepotting': '분갈이 시도',
-      'repottingDesc': '식물이 스트레스를 받거나 성장이 느려진 것 같다면 분갈이가 도움 될 수 있습니다. 분갈이는 더 나은 영양분이 있는 새로운 흙을 제공할 뿐만 아니라 해충이나 질병을 확인할 수 있는 기회도 제공합니다. 또한 뿌리가 화분에 묶이거나 엉키는 것을 방지할 수 있습니다.',
+      'repottingDesc': '식물이 스트레스를 받거나 성장이 느려진 것 같다면 분갈이가 도움 될 수 있습니다. 분갈이는 더 나은 영양분이 있는 ��로운 흙을 제공할 뿐만 아니라 해충이나 질병을 확인할 수 있는 기회도 제공합니다. 또한 뿌리가 화분에 묶이거나 엉키는 것을 방지할 수 있습니다.',
       'checkSensor': '센서 확인',
       'sensorDesc': '센서에 문제가 있을 수 있습니다. 센서가 적절한 깊이와 올바른 위치에 안전하게 삽입되어 있는지 확인하세요. 신호가 약하거나 배터리가 부족한 것과 같은 연결 문제가 없는지 확인하고 장치가 보정되어 정확한 판독값을 제공하는지 확인하세요.',
       'cantFindReason': '정확한 원인을 찾을 수 없다면, AI 진단과 채팅하여 문제를 파악하세요.',
@@ -280,6 +281,7 @@ class AppLocalizations {
       'editPlant': '식물 수정',
       'plantUpdated': '식물이 업데이트되었습니다',
       'failedToUpdate': '업데이트 실패',
+      'selectRoomOrCustom': '방을 선택하거나 직접 추가하세요',
     },
   };
 
@@ -417,6 +419,7 @@ class AppLocalizations {
   String get editPlant => _localizedValues[locale.languageCode]!['editPlant']!;
   String get plantUpdated => _localizedValues[locale.languageCode]!['plantUpdated']!;
   String get failedToUpdate => _localizedValues[locale.languageCode]!['failedToUpdate']!;
+  String get selectRoomOrCustom => _localizedValues[locale.languageCode]!['selectRoomOrCustom']!;
 }
 
 class AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

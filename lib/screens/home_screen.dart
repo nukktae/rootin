@@ -14,8 +14,8 @@ import '../screens/add_plant_screen.dart';
 import '../widgets/rootin_header.dart';
 import '../widgets/ai_chat_fab.dart';
 import '../services/plant_service.dart';
-import '../widgets/filter_bottom_sheet.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/filter_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(int) setCurrentIndex;
@@ -31,9 +31,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Plant> plantData = [];
-  String selectedStatus = 'All Status';
-  String selectedLocation = 'All Locations';
-  String selectedRoom = 'All Rooms';
 
   @override
   void initState() {
@@ -242,60 +239,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _openFilterModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => FilterBottomSheet(
-        selectedStatus: selectedStatus,
-        selectedLocation: selectedLocation,
-        selectedRoom: selectedRoom,
-        onApply: (status, location, room) {
-          setState(() {
-            selectedStatus = status;
-            selectedLocation = location;
-            selectedRoom = room;
-          });
-          _refreshPlants();
-        },
-      ),
-    );
-  }
-
-  List<Plant> getFilteredPlants() {
-    return plantData.where((plant) {
-      // Status filter
-      if (selectedStatus != 'All Status') {
-        String plantStatus = '';
-        if (plant.status == 'HEALTHY') {
-          plantStatus = 'Ideal';
-        } else if (plant.status == 'UNDERWATER') plantStatus = 'Underwatered';
-        else if (plant.status == 'OVERWATER') plantStatus = 'Overwatered';
-        else if (plant.status == 'WATERLOGGED') plantStatus = 'Water-logged';
-        
-        if (plantStatus != selectedStatus) return false;
-      }
-
-      // Location filter
-      if (selectedLocation != 'All Locations' && 
-          plant.category.split('/')[0] != selectedLocation) {
-        return false;
-      }
-
-      // Room filter
-      if (selectedRoom != 'All Rooms' && 
-          plant.category.split('/').last != selectedRoom) {
-        return false;
-      }
-
-      return true;
-    }).toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -331,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: const Icon(
                             Icons.add,
-                            color: Color(0xFF8E8E8E),
+                            color: Colors.black,
                             size: 24,
                           ),
                         ),
@@ -351,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 4),
                       Text(
                         AppLocalizations.of(context).todaysWatering,
                         style: const TextStyle(
@@ -359,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           fontSize: 22,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w600,
-                          height: 1.2,
+                          height: 1.0,
                           letterSpacing: -0.22,
                         ),
                       ),
@@ -368,51 +311,52 @@ class _HomeScreenState extends State<HomeScreen> {
                         underwaterCount: getUnderwaterCount(),
                         setCurrentIndex: widget.setCurrentIndex,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
-                            child: Text(
-                              AppLocalizations.of(context).myPlants,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 22,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.22,
-                              ),
+                          Text(
+                            AppLocalizations.of(context).myPlants,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 22,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                              height: 1.0,
+                              letterSpacing: -0.22,
                             ),
                           ),
                           GestureDetector(
-                            onTap: _openFilterModal,
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const FilterBottomSheet(),
+                              );
+                            },
                             child: Container(
-                              width: 40,
-                              height: 40,
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: ShapeDecoration(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
                                 color: const Color(0xFFEEEEEE),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: SvgPicture.asset(
                                 'assets/icons/filter_icon.svg',
-                                width: 20,
-                                height: 20,
+                                width: 16,
+                                height: 16,
                               ),
                             ),
                           ),
                         ],
                       ),
                       Transform.translate(
-                        offset: const Offset(0, -30),
+                        offset: const Offset(0, -26),
                         child: PlantGridView(
-                          plants: getFilteredPlants(),
+                          plants: plantData,
                           emptyMessage: AppLocalizations.of(context).tryToAddPlant,
                         ),
                       ),
-                      const SizedBox(height: 20),
                     ],
                   ),
                 ),

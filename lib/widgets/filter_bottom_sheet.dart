@@ -1,46 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class FilterBottomSheet extends StatefulWidget {
-  final String selectedStatus;
-  final String selectedLocation;
-  final String selectedRoom;
-  final Function(String, String, String) onApply;
-
-  const FilterBottomSheet({
-    super.key,
-    required this.selectedStatus,
-    required this.selectedLocation,
-    required this.selectedRoom,
-    required this.onApply,
-  });
+  const FilterBottomSheet({super.key});
 
   @override
   State<FilterBottomSheet> createState() => _FilterBottomSheetState();
 }
 
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
-  late String status;
-  late String location;
-  late String room;
-
-  @override
-  void initState() {
-    super.initState();
-    status = widget.selectedStatus;
-    location = widget.selectedLocation;
-    room = widget.selectedRoom;
-  }
+  String selectedStatus = 'All Status';
+  String selectedLocation = 'All Locations';
+  String selectedRoom = 'All Rooms';
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(
-        top: 24,
-        left: 24,
-        right: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-      ),
+      padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -55,101 +30,146 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               const Text(
                 'Filter',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black,
                 ),
               ),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEEEEEE),
-                    shape: BoxShape.circle,
-                  ),
-                  child: SvgPicture.asset(
-                    'assets/icons/close.svg',
-                    width: 20,
-                    height: 20,
-                  ),
-                ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           const Text(
             'Status',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
-          _buildDropdown(
-            value: status,
-            items: const [
-              'All Status',
-              'Ideal',
-              'Underwatered',
-              'Overwatered',
-              'Water-logged',
-            ],
-            onChanged: (value) => setState(() => status = value!),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: selectedStatus,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              ),
+              items: [
+                'All Status',
+                'Ideal',
+                'Underwatered',
+                'Overwatered',
+                'Water-logged',
+                'Measuring',
+                'No sensor',
+              ].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedStatus = newValue!;
+                });
+              },
+            ),
           ),
           const SizedBox(height: 24),
           const Text(
             'Locations',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
-          _buildDropdown(
-            value: location,
-            items: const [
-              'All Locations',
-              'Livingroom',
-              'Bedroom',
-              'Kitchen',
-            ],
-            onChanged: (value) => setState(() => location = value!),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: selectedLocation,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              ),
+              items: [
+                'All Locations',
+                'Livingroom',
+                'Bedroom',
+                'Kitchen',
+              ].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedLocation = newValue!;
+                });
+              },
+            ),
           ),
           const SizedBox(height: 24),
           const Text(
             'Rooms',
             style: TextStyle(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 8),
-          _buildDropdown(
-            value: room,
-            items: const [
-              'All Rooms',
-              'Office',
-              'Porch',
-            ],
-            onChanged: (value) => setState(() => room = value!),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: selectedRoom,
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 16),
+              ),
+              items: [
+                'All Rooms',
+                'Livingroom',
+                'Bedroom',
+                'Kitchen',
+              ].map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedRoom = newValue!;
+                });
+              },
+            ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            height: 50,
             child: ElevatedButton(
               onPressed: () {
-                widget.onApply(status, location, room);
+                // Implement filter logic here
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
               child: const Text(
@@ -166,32 +186,4 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       ),
     );
   }
-
-  Widget _buildDropdown({
-    required String value,
-    required List<String> items,
-    required Function(String?) onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEEEEEE),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          icon: const Icon(Icons.keyboard_arrow_down),
-          items: items.map((String item) {
-            return DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ),
-    );
-  }
-} 
+}

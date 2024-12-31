@@ -265,7 +265,7 @@ class AIChatbotScreenState extends State<AIChatbotScreen> with SingleTickerProvi
     String currentText = '';
     int currentIndex = 0;
 
-    _messageTimers[index] = Timer.periodic(Duration(milliseconds: speed), (timer) {
+    _messageTimers[index] = Timer.periodic(const Duration(milliseconds: speed), (timer) {
       // Add batch processing to make it even faster
       for (var i = 0; i < 2; i++) { // Process 2 characters at once
         if (currentIndex < message.length) {

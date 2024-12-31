@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../widgets/status_icon.dart';
-import 'dart:developer';
 import '../screens/plant_detail_screen.dart';
 import '../models/plant.dart';
 import '../l10n/app_localizations.dart';
@@ -8,27 +7,19 @@ import '../l10n/app_localizations.dart';
 class PlantGridView extends StatelessWidget {
   final List<Plant> plants;
   final String emptyMessage;
+  final TextStyle? emptyMessageStyle;
 
   const PlantGridView({
     super.key,
     required this.plants,
     required this.emptyMessage,
+    this.emptyMessageStyle,
   });
 
   @override
   Widget build(BuildContext context) {
     if (plants.isEmpty) {
-      return Center(
-        child: Text(
-          AppLocalizations.of(context).tryToAddPlant,
-          style: const TextStyle(
-            color: Color(0xFF6F6F6F),
-            fontSize: 14,
-            fontFamily: 'Inter',
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     return GridView.builder(
@@ -37,13 +28,12 @@ class PlantGridView extends StatelessWidget {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        mainAxisSpacing: 24,
         childAspectRatio: 0.75,
       ),
       itemCount: plants.length,
       itemBuilder: (context, index) {
         final plant = plants[index];
-        log('Plant data for grid item: ${plant.toJson()}');
         
         return GestureDetector(
           onTap: () {
@@ -94,7 +84,6 @@ class PlantGridView extends StatelessWidget {
                                       );
                                     },
                                     errorBuilder: (context, error, stackTrace) {
-                                      log('Image error for ${plant.nickname}: $error');
                                       return const Icon(
                                         Icons.image_not_supported,
                                         color: Color(0xFF8E8E8E),

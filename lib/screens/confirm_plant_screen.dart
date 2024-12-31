@@ -29,6 +29,16 @@ class ConfirmPlantScreen extends StatefulWidget {
 }
 
 class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> _registerPlant(BuildContext context) async {
     try {
       final token = dotenv.env['FCM_TOKEN'];
@@ -134,6 +144,105 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
     );
   }
 
+  // Update the plant image and details section
+  Widget _buildPlantDetails() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Container(
+          width: 185.51,
+          height: 185.51,
+          decoration: ShapeDecoration(
+            image: DecorationImage(
+              image: NetworkImage(widget.imageUrl),
+              fit: BoxFit.fill,
+              onError: (exception, stackTrace) => const Icon(
+                Icons.image_not_supported,
+                size: 50,
+                color: Colors.grey,
+              ),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.18),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          widget.plantName,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 22,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+            height: 1.2,
+            letterSpacing: -0.22,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          AppLocalizations.of(context).inRoom(widget.roomName),
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Color(0xFF6F6F6F),
+            fontSize: 16,
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w500,
+            height: 1.2,
+            letterSpacing: -0.16,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Update the buttons section
+  Widget _buildButtons() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 30),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            height: 50,
+            child: ElevatedButton(
+              onPressed: () => _registerPlant(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context).addPlant,
+                style: const TextStyle(
+                  fontFamily: "Inter",
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppLocalizations.of(context).cancel,
+              style: const TextStyle(
+                fontFamily: "Inter",
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6F6F6F),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -146,160 +255,69 @@ class _ConfirmPlantScreenState extends State<ConfirmPlantScreen> {
             children: [
               const SizedBox(height: 16),
 
-              // Back Button with adjusted padding
-              Padding(
-                padding: const EdgeInsets.only(top: 24.0),
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE7E7E7),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: SvgPicture.asset(
-                      'assets/icons/arrow.svg',
-                      width: 24,
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        Colors.grey,
-                        BlendMode.srcIn,
-                      ),
+              // Back Button
+              Container(
+                width: 48,
+                height: 48,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFE7E7E7),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: SvgPicture.asset(
+                    'assets/icons/arrow.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.black,
+                      BlendMode.srcIn,
                     ),
-                    onPressed: () => Navigator.pop(context),
                   ),
+                  onPressed: () => Navigator.pop(context),
                 ),
+              ),
+
+              const SizedBox(height: 48),
+
+              // Title and Subtitle
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).readyToAddPlant,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 22,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      height: 1.2,
+                      letterSpacing: -0.22,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context).skipForNow,
+                    style: const TextStyle(
+                      color: Color(0xFF6F6F6F),
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                      letterSpacing: -0.28,
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 40),
-
-              // Title
-              Text(
-                AppLocalizations.of(context).readyToAddPlant,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 22,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w600,
-                  height: 1.2,
-                  letterSpacing: -0.22,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Subtitle
-              Text(
-                AppLocalizations.of(context).skipForNow,
-                style: const TextStyle(
-                  color: Color(0xFF6F6F6F),
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w500,
-                  height: 1.4,
-                  letterSpacing: -0.28,
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // Plant Image and Details
-              const SizedBox(height: 32),
+              
               Expanded(
                 child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 185.51,
-                        height: 185.51,
-                        decoration: ShapeDecoration(
-                          image: DecorationImage(
-                            image: NetworkImage(widget.imageUrl),
-                            fit: BoxFit.fill,
-                            onError: (exception, stackTrace) => const Icon(
-                              Icons.image_not_supported,
-                              size: 50,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.18),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        widget.plantName,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 22,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          height: 1.2,
-                          letterSpacing: -0.22,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppLocalizations.of(context).inRoom(widget.roomName),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(0xFF6F6F6F),
-                          fontSize: 16,
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          height: 1.2,
-                          letterSpacing: -0.16,
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: _buildPlantDetails(),
                 ),
               ),
 
-              // Buttons
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () => _registerPlant(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: Text(
-                          AppLocalizations.of(context).addPlant,
-                          style: const TextStyle(
-                            fontFamily: "Inter",
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        AppLocalizations.of(context).cancel,
-                        style: const TextStyle(
-                          fontFamily: "Inter",
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6F6F6F),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildButtons(),
             ],
           ),
         ),

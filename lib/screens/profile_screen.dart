@@ -8,9 +8,8 @@ import '../providers/language_provider.dart';
 import '../l10n/app_localizations.dart';
 import 'package:camera/camera.dart';
 import '../screens/privacy_policy_screen.dart';
-import '../screens/notification_settings_screen.dart';
 import '../screens/sensor_settings_screen.dart';
-import '../screens/terms_of_service_screen.dart';
+import '../screens/onboarding/onboarding_screen.dart';
 
 
 class ProfileScreen extends StatelessWidget {
@@ -215,7 +214,14 @@ class ProfileScreen extends StatelessWidget {
                 _buildMenuItem(
                   title: AppLocalizations.of(context).help,
                   icon: const Icon(Icons.help_outline, color: Colors.black),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const OnboardingScreen(),
+                      ),
+                    );
+                  },
                 ),
                 _buildMenuItem(
                   title: AppLocalizations.of(context).privacyPolicy,

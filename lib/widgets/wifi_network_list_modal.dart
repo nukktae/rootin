@@ -27,120 +27,248 @@ class _WifiNetworkListModalState extends State<WifiNetworkListModal> {
   ];
 
   String? networkStatus;
+  bool showNavigatingText = false;
 
   void _showPasswordDialog(String networkName) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         final TextEditingController passwordController = TextEditingController();
+        bool obscurePassword = true;
         
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
+            return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              title: Text(
-                'Connect to $networkName',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Enter the password to connect to the network.',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF6F6F6F),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      labelStyle: TextStyle(color: Color(0xFF6F6F6F)),
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF6F6F6F)),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF6F6F6F)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF6F6F6F)),
-                      ),
-                    ),
-                    obscureText: true,
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: TextButton(
-                    onPressed: () async {
-                      setState(() {
-                        networkStatus = 'Connecting...';
-                      });
-                      
-                      await Future.delayed(const Duration(seconds: 5));
-                      
-                      setState(() {
-                        networkStatus = 'Connected';
-                      });
-                      
-                      await Future.delayed(const Duration(seconds: 1));
-                      setState(() {
-                        networkStatus = 'Navigating to final step...';
-                      });
-                      
-                      await Future.delayed(const Duration(seconds: 1));
-                      
-                      if (mounted) {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FinalStepScreen(
-                              plantNickname: widget.plantNickname,
-                              sensorId: 'Rootin Sensor 2067',
-                              networkName: networkName,
-                              imageUrl: widget.imageUrl,
+              child: SizedBox(
+                width: 345,
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // WiFi Title
+                        const Text(
+                          'WiFi',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 24,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        // Subtitle
+                        const Text(
+                          'Enter network information',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 18,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        
+                        // Network Name Section
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Network Name',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        );
-                      }
-                    },
-                    child: Text(
-                      networkStatus ?? 'Connect',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          height: 56,
+                          decoration: ShapeDecoration(
+                            shape: RoundedRectangleBorder(
+                              side: const BorderSide(width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                networkName,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // Password Section
+                        const Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Network Password',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 56,
+                          child: TextField(
+                            controller: passwordController,
+                            obscureText: obscurePassword,
+                            style: const TextStyle(
+                              color: Color(0xFF797979),
+                              fontSize: 16,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Password',
+                              hintStyle: const TextStyle(
+                                color: Color(0xFF797979),
+                                fontSize: 16,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(width: 2, color: Color(0xFFE0E0E0)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(width: 2, color: Color(0xFFE0E0E0)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: const BorderSide(width: 2, color: Color(0xFFE0E0E0)),
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                  color: Colors.grey,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    obscurePassword = !obscurePassword;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            SizedBox(
+                              width: 120,
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  setState(() {
+                                    networkStatus = 'Connecting...';
+                                  });
+                                  
+                                  await Future.delayed(const Duration(seconds: 5));
+                                  
+                                  setState(() {
+                                    networkStatus = 'Connected!';
+                                  });
+                                  
+                                  await Future.delayed(const Duration(seconds: 1));
+                                  setState(() {
+                                    networkStatus = 'Connected!';
+                                    showNavigatingText = true;
+                                  });
+                                  
+                                  await Future.delayed(const Duration(seconds: 1));
+                                  
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => FinalStepScreen(
+                                          plantNickname: widget.plantNickname,
+                                          sensorId: 'Rootin Sensor 2067',
+                                          networkName: networkName,
+                                          imageUrl: widget.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                                child: Text(
+                                  networkStatus ?? 'Connect',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (showNavigatingText)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              'Navigating to final step...',
+                              style: TextStyle(
+                                color: Colors.black.withOpacity(0.7),
+                                fontSize: 12,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-              ],
+              ),
             );
           },
         );

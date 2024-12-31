@@ -170,14 +170,22 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
       body: SafeArea(
         child: Stack(
           children: [
-            // Main content - moved lower
+            // Main content - wrapped in SingleChildScrollView
             Padding(
-              padding: const EdgeInsets.only(top: 120), // Added top padding to move content down
-              child: _isLoading
-                  ? _buildLoadingState()
-                  : _error != null
-                      ? _buildErrorState()
-                      : _buildIdentifiedPlantContent(),
+              padding: const EdgeInsets.only(top: 80), // Reduced from 120 to 80
+              child: SingleChildScrollView(
+                child: _isLoading
+                    ? SizedBox(
+                        height: MediaQuery.of(context).size.height - 100,
+                        child: _buildLoadingState(),
+                      )
+                    : _error != null
+                        ? SizedBox(
+                            height: MediaQuery.of(context).size.height - 100,
+                            child: _buildErrorState(),
+                          )
+                        : _buildIdentifiedPlantContent(),
+              ),
             ),
             
             // Close button - stays at top
@@ -229,22 +237,21 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
 
   Widget _buildIdentifiedPlantContent() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // User's uploaded/captured image
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: DecorationImage(
-                image: FileImage(widget.imageFile),
-                fit: BoxFit.cover,
-              ),
+          // User's uploaded image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.file(
+              widget.imageFile,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           
           // Plant name and scientific name
           Text(
@@ -266,14 +273,17 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
           const SizedBox(height: 48),
           
           // API reference image
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              image: DecorationImage(
-                image: NetworkImage(_identifiedPlant?['imageUrl'] ?? ''),
-                fit: BoxFit.cover,
+          Hero(
+            tag: 'plant_image_${_identifiedPlant?['id']}',
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                image: DecorationImage(
+                  image: NetworkImage(_identifiedPlant?['imageUrl'] ?? ''),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -327,6 +337,9 @@ class _IdentifyPlantScreenState extends State<IdentifyPlantScreen> with SingleTi
               ),
             ),
           ),
+          
+          // Add extra bottom padding for better scrolling
+          const SizedBox(height: 32),
         ],
       ),
     );

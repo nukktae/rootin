@@ -171,11 +171,9 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
-
-              // Back Button with adjusted padding
+              // Back Button
               Padding(
-                padding: const EdgeInsets.only(top: 24.0),
+                padding: const EdgeInsets.only(top: 16.0),
                 child: Container(
                   decoration: const BoxDecoration(
                     color: Color(0xFFE7E7E7),
@@ -187,7 +185,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                       width: 24,
                       height: 24,
                       colorFilter: const ColorFilter.mode(
-                        Colors.grey,
+                        Colors.black,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -196,150 +194,174 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
                 ),
               ),
 
-              const SizedBox(height: 40), // Keep this spacing for the content below
-
-              // Location text
-              Padding(
-                padding: const EdgeInsets.only(left: 0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 30,
-                  child: Text(
-                    AppLocalizations.of(context).location,
-                    style: const TextStyle(
-                      color: Color(0xFF757575),
-                      fontSize: 22,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      height: 0.06,
-                      letterSpacing: -0.22,
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 4), // Reduced from 8 to 4
-
-              // Black site container
-              Container(
-                height: 36,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: ShapeDecoration(
-                  color: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(
-                  widget.site,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.32,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 40), // Increased from 24 to 40
+              const SizedBox(height: 48),
 
               // "Choose area of the plant" text
-              SizedBox(
-                width: 353,
-                child: Text(
-                  AppLocalizations.of(context).chooseArea,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 22,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w600,
-                    height: 0.06,
-                    letterSpacing: -0.22,
-                  ),
+              Text(
+                AppLocalizations.of(context).chooseArea,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 22,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.22,
+                ),
+              ),
+
+              // Add subtitle text
+              const SizedBox(height: 8),
+              Text(
+                AppLocalizations.of(context).selectRoomOrCustom,
+                style: const TextStyle(
+                  color: Color(0xFF6F6F6F),
+                  fontSize: 14,
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: -0.28,
                 ),
               ),
 
               const SizedBox(height: 24),
 
               // Room selection grid
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.only(top: 0),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 2.5,
-                  ),
-                  itemCount: rooms.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == rooms.length) {
-                      // Add Room Button
-                      return Container(
-                        decoration: ShapeDecoration(
-                          shape: RoundedRectangleBorder(
-                            side: const BorderSide(
-                              width: 1,
-                              color: Color(0xFFE3E3E3),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  const double itemHeight = 70.0;
+                  final int itemCount = rooms.length + 1; // Total items including Add Room button
+                  final int rowCount = ((itemCount + 1) / 2).ceil();
+                  const double spacing = 10.0;
+                  
+                  final double totalHeight = itemCount <= 2 
+                      ? itemHeight  // Single row
+                      : itemCount <= 4 
+                          ? (itemHeight * 2) + spacing  // Two rows
+                          : (itemHeight * 3) + (spacing * 2); // Three rows
+                  
+                  return SizedBox(
+                    height: totalHeight,
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: EdgeInsets.zero,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 10,
+                        crossAxisSpacing: 10,
+                        childAspectRatio: 3.0,
+                      ),
+                      itemCount: rooms.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == rooms.length) {
+                          // Add Room Button
+                          return Container(
+                            decoration: ShapeDecoration(
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                  width: 1,
+                                  color: Color(0xFFE3E3E3),
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(10),
+                            child: InkWell(
+                              onTap: showAddRoomDialog,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Text(
+                                    AppLocalizations.of(context).addRoom,
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Inter',
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final room = rooms[index];
+                        final isSelected = selectedIndex == index;
+
+                        return Container(
+                          decoration: ShapeDecoration(
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(
+                                width: isSelected ? 2.40 : 1,
+                                color: isSelected ? Colors.black : const Color(0xFFE3E3E3),
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
-                        ),
-                        child: InkWell(
-                          onTap: showAddRoomDialog,
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8),
-                              child: Text(
-                                AppLocalizations.of(context).addRoom,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontFamily: 'Inter',
-                                  fontWeight: FontWeight.w600,
+                          child: InkWell(
+                            onTap: () => onSelectRoom(index),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  room['roomName'],
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    }
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
 
-                    final room = rooms[index];
-                    final isSelected = selectedIndex == index;
+              const SizedBox(height: 32),
 
-                    return Container(
+              // Location text and site container - wrap in intrinsic height
+              IntrinsicHeight(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context).location,
+                      style: const TextStyle(
+                        color: Color(0xFF757575),
+                        fontSize: 22,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.22,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Container(
+                      height: 32,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                       decoration: ShapeDecoration(
+                        color: Colors.black,
                         shape: RoundedRectangleBorder(
-                          side: BorderSide(
-                            width: isSelected ? 2.40 : 1,
-                            color: isSelected ? Colors.black : const Color(0xFFE3E3E3),
-                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: InkWell(
-                        onTap: () => onSelectRoom(index),
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(
-                              room['roomName'],
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
+                      child: Text(
+                        widget.site,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.32,
                         ),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
 
@@ -347,7 +369,7 @@ class _RoomSelectionScreenState extends State<RoomSelectionScreen> {
 
               // Continue button
               Padding(
-                padding: const EdgeInsets.only(bottom: 1.0),
+                padding: const EdgeInsets.only(bottom: 16.0),
                 child: SizedBox(
                   width: double.infinity,
                   height: 50,

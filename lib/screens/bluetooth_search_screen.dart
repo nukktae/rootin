@@ -153,11 +153,22 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
 
               const SizedBox(height: 40),
 
-              // Title
+              // Step 1 Title
               const Text(
-                'Searching Sensor...',
+                'Step 1:',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              // Detecting Sensor Title
+              const Text(
+                'Detecting Sensor',
+                style: TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -166,9 +177,9 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
 
               // Description
               const Text(
-                'To enter pairing mode, turn on Bluetooth mode and press the button on your sensor for about 3-5s.',
+                'To enter pairing mode, hold the button at the top of your sensor for about 3-5s.',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   color: Color(0xFF6F6F6F),
                   height: 1.5,
                 ),
@@ -181,8 +192,8 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
                 child: GestureDetector(
                   onTap: () => _showBluetoothSearchModal(context),
                   child: Container(
-                    width: 200,
-                    height: 200,
+                    width: 280,
+                    height: 280,
                     decoration: const BoxDecoration(
                       color: Color(0xFFF5F5F5),
                       shape: BoxShape.circle,
@@ -197,12 +208,12 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
 
               const Spacer(),
 
-              // Buy Sensor Button
+              // Ready to connect Button
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 52,
                 child: ElevatedButton(
-                  onPressed: () => _showBuySensorDialog(context),
+                  onPressed: () => _showBluetoothSearchModal(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
                     shape: RoundedRectangleBorder(
@@ -210,10 +221,35 @@ class _BluetoothSearchScreenState extends State<BluetoothSearchScreen> {
                     ),
                   ),
                   child: const Text(
-                    'Buy a sensor',
+                    'Ready to connect',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Buy Sensor Button
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton(
+                  onPressed: () => _showBuySensorDialog(context),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.black, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Buy a sensor',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

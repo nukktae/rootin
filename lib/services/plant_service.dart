@@ -10,6 +10,7 @@ import 'dart:math' as math;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -415,6 +416,50 @@ class PlantService {
     } catch (e) {
       dev.log('Error verifying token: $e');
       return false;
+    }
+  }
+
+  Future<void> updatePlantImage({
+    required String plantId,
+    required File imageFile,
+  }) async {
+    try {
+      final token = await _getValidToken();
+      if (token == null) throw Exception('Authentication token not available');
+
+      if (!await imageFile.exists()) {
+        throw Exception('Image file does not exist');
+      }
+
+      // Create multipart request
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('${ApiConstants.baseUrl}/${ApiConstants.apiVersion}/plants/$plantId/image'),
+      );
+
+      // Add authorization header
+      request.headers.addAll({
+        'Authorization': 'Bearer $token',
+      });
+
+      // Add file to request
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'image',
+          imageFile.path,
+        ),
+      );
+
+      // Send request
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode != 200) {
+        throw Exception('Server returned status code: ${response.statusCode}, body: ${response.body}');
+      }
+    } catch (e) {
+      dev.log('Error updating plant image: $e');
+      rethrow;
     }
   }
 }

@@ -100,7 +100,7 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 48),
               Text(
                 AppLocalizations.of(context).chooseSite,
                 style: const TextStyle(
@@ -195,7 +195,7 @@ class _SiteSelectionScreenState extends State<SiteSelectionScreen> {
               ),
               // Continue button
               Padding(
-                padding: const EdgeInsets.only(bottom: 32.0),
+                padding: const EdgeInsets.only(bottom: 50.0),
                 child: SizedBox(
                   width: double.infinity,
                   height: 50,

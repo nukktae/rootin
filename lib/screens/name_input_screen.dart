@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'site_selection_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../l10n/app_localizations.dart';
+import 'dart:math';
 
 class NameInputScreen extends StatefulWidget {
   final String plantId;
@@ -21,29 +22,55 @@ class NameInputScreen extends StatefulWidget {
   State<NameInputScreen> createState() => _NameInputScreenState();
 }
 
-class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProviderStateMixin {
+class _NameInputScreenState extends State<NameInputScreen> with TickerProviderStateMixin {
   final TextEditingController _nameController = TextEditingController();
   bool _isButtonEnabled = false;
   static const int maxCharacters = 20;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+  late AnimationController _glowController;
+  late Animation<double> _glowAnimation;
+
+  // Add this list of cute nicknames
+  final List<String> _cuteNicknames = [
+    'Leafy',
+    'Sprout',
+    'Sunny',
+    'Bloom',
+    'Pip',
+    'Flora',
+    'Sage',
+    'Fern',
+    'Blossom',
+    'Ziggy',
+    'Bean',
+    'Willow',
+    'Pepper',
+    'Basil',
+    'Maple',
+  ];
+
+  String _getRandomNickname() {
+    final random = Random();
+    return _cuteNicknames[random.nextInt(_cuteNicknames.length)];
+  }
 
   @override
   void initState() {
     super.initState();
-    // Initialize animation controller
-    _animationController = AnimationController(
+    
+    _glowController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 1500),
     );
     
-    // Create scale animation
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 4.0,
+    ).animate(CurvedAnimation(
+      parent: _glowController,
+      curve: Curves.easeInOut,
+    ));
+    
+    _glowController.repeat(reverse: true);
 
     _nameController.addListener(() {
       setState(() {
@@ -51,11 +78,10 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
                          _nameController.text.length <= maxCharacters;
         _isButtonEnabled = newIsValid;
         
-        // Animate the checkmark based on validity
         if (newIsValid) {
-          _animationController.forward();
+          _glowController.repeat(reverse: true);
         } else {
-          _animationController.reverse();
+          _glowController.stop();
         }
       });
     });
@@ -63,7 +89,7 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _glowController.dispose();
     _nameController.dispose();
     super.dispose();
   }
@@ -94,14 +120,53 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
   bool get _isValidInput => _nameController.text.isNotEmpty && 
                            _nameController.text.length <= maxCharacters;
 
+  // Replace _buildShiningImage with _buildGlowingImage
+  Widget _buildGlowingImage() {
+    return AnimatedBuilder(
+      animation: _glowAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: _isValidInput ? BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0E8345).withOpacity(0.3),
+                blurRadius: _glowAnimation.value,
+                spreadRadius: _glowAnimation.value,
+              ),
+            ],
+          ) : null,
+          child: Hero(
+            tag: 'plant_image_${widget.plantId}',
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.network(
+                widget.imageUrl,
+                height: 200,
+                width: 200,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return _placeholderImage();
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           child: SizedBox(
-            height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+            height: MediaQuery.of(context).size.height - 
+                   MediaQuery.of(context).padding.top - 
+                   MediaQuery.of(context).padding.bottom,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
@@ -110,7 +175,7 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
                   Align(
                     alignment: Alignment.topLeft,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 55.0),
+                      padding: const EdgeInsets.only(top: 16.0),
                       child: Container(
                         decoration: const BoxDecoration(
                           color: Color(0xFFE7E7E7),
@@ -122,7 +187,7 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
                             width: 24,
                             height: 24,
                             colorFilter: const ColorFilter.mode(
-                              Colors.grey,
+                              Colors.black,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -132,121 +197,108 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
                     ),
                   ),
 
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 32),
 
-                  // Plant Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      widget.imageUrl,
-                      height: 150,
-                      width: 150,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _placeholderImage();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-
-                  // Text sections
-                  Text(
-                    AppLocalizations.of(context).nameYourPlant,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 22,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.22,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    AppLocalizations.of(context).nameWithinCharacters,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF6F6F6F),
-                      fontSize: 14,
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: -0.28,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Input Field
-                  Container(
-                    width: 263,
-                    height: 48,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      color: const Color(0xFFE8E8E8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Stack(
+                  // Content
+                  Expanded(
+                    child: Column(
                       children: [
-                        TextField(
-                          controller: _nameController,
-                          maxLength: maxCharacters,
+                        const Spacer(flex: 1),
+
+                        // Plant Image
+                        _buildGlowingImage(),
+                        const SizedBox(height: 48),
+
+                        // Text sections
+                        Text(
+                          AppLocalizations.of(context).nameYourPlant,
+                          textAlign: TextAlign.center,
                           style: const TextStyle(
-                            color: Color(0xFF5E5E5E),
-                            fontSize: 16,
+                            color: Colors.black,
+                            fontSize: 22,
                             fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: -0.16,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: AppLocalizations.of(context).plantNickname,
-                            hintStyle: const TextStyle(
-                              color: Color(0xFF5E5E5E),
-                              fontSize: 16,
-                              fontFamily: 'Inter',
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: -0.16,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                            counterText: '',
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            filled: false,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: -0.22,
                           ),
                         ),
-                        if (_isValidInput)
-                          Positioned(
-                            right: 12,
-                            top: 12,
-                            child: FadeTransition(
-                              opacity: _scaleAnimation,
-                              child: ScaleTransition(
-                                scale: _scaleAnimation,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
+                        const SizedBox(height: 4),
+                        Text(
+                          AppLocalizations.of(context).nameWithinCharacters,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Color(0xFF6F6F6F),
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: -0.28,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Input Field
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 263,
+                              height: 48,
+                              clipBehavior: Clip.antiAlias,
+                              decoration: ShapeDecoration(
+                                color: const Color(0xFFE8E8E8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: TextField(
+                                controller: _nameController,
+                                maxLength: maxCharacters,
+                                style: const TextStyle(
+                                  color: Color(0xFF5E5E5E),
+                                  fontSize: 16,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.16,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(context).plantNickname,
+                                  hintStyle: const TextStyle(
+                                    color: Color(0xFF5E5E5E),
+                                    fontSize: 16,
+                                    fontFamily: 'Inter',
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: -0.16,
                                   ),
-                                  child: const Icon(
-                                    Icons.check_circle,
-                                    color: Color(0xFF0E8345), // Updated to the exact green color
-                                    size: 24,
+                                  contentPadding: const EdgeInsets.only(left: 20, top: 14),
+                                  counterText: '',
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  filled: false,
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(
+                                      Icons.casino,
+                                      color: Color(0xFF5E5E5E),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _nameController.text = _getRandomNickname();
+                                      });
+                                    },
                                   ),
                                 ),
                               ),
                             ),
-                          ),
+                          ],
+                        ),
+
+                        const Spacer(flex: 2),
                       ],
                     ),
                   ),
 
-                  const Spacer(),
-
                   // Continue Button
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 32.0),
+                    padding: const EdgeInsets.only(bottom: 50.0),
                     child: SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -281,8 +333,8 @@ class _NameInputScreenState extends State<NameInputScreen> with SingleTickerProv
   // Placeholder image widget
   Widget _placeholderImage() {
     return Container(
-      height: 150,
-      width: 150,
+      height: 200,
+      width: 200,
       color: Colors.grey[300],
       child: const Icon(
         Icons.image_not_supported,
