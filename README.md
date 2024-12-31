@@ -79,18 +79,18 @@ Rootin revolutionizes indoor plant care by combining IoT technology with AI-powe
   <table>
     <tr>
       <td align="center">
-        <video src="assets/screenshots/demorootin.MP4" width="320">
-          Full App Demo
-        </video>
-        <br />
-        <em>Complete App Walkthrough</em>
+        <a href="https://drive.google.com/file/d/1LueaIvcmNsAWvzxk6HQSYY1rBAJRS86Q/view?usp=share_link" target="_blank">
+          <img src="assets/screenshots/home.png" width="320" alt="Watch Full Demo"/>
+          <br />
+          <em>📺 Watch Full App Demo</em>
+        </a>
       </td>
       <td align="center">
-        <video src="assets/screenshots/AddplantConnectSensor.MP4" width="320">
-          Sensor Connection Flow
-        </video>
-        <br />
-        <em>Plant & Sensor Setup Process</em>
+        <a href="https://drive.google.com/file/d/1AmaRr6iMf5mYG0wnsaKu8x5EEEB4C2DV/view?usp=share_link" target="_blank">
+          <img src="assets/screenshots/addplant.png" width="320" alt="Watch Sensor Setup"/>
+          <br />
+          <em>📺 Watch Sensor Setup Demo</em>
+        </a>
       </td>
     </tr>
   </table>
